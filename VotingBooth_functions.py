@@ -1,7 +1,7 @@
 import cv2
 import mediapipe as mp  # for detecting fingers
 import time  # For adding time to the main file
-from pyzbar import pyzbar  # for QR Code scanning
+#from pyzbar import pyzbar  # for QR Code scanning
 import math
 import qrcode
 
@@ -232,16 +232,16 @@ def mean_no_none(l):
     return [round(sum(l_no_none_x) / len(l_no_none_x),2), round(sum(l_no_none_y) / len(l_no_none_y),2)]
 
 
-def read_barcodes(frame):
-    barcodes = pyzbar.decode(frame)
-    barcode_info = ''
-    for barcode in barcodes:
-        x, y, w, h = barcode.rect
-        barcode_info = barcode.data.decode('utf-8')
-        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-        font = cv2.FONT_HERSHEY_DUPLEX
-        cv2.putText(frame, barcode_info, (x + 6, y - 6), font, 2.0, (255, 255, 255), 1)
-    return frame, barcode_info
+# def read_barcodes(frame):
+#     barcodes = pyzbar.decode(frame)
+#     barcode_info = ''
+#     for barcode in barcodes:
+#         x, y, w, h = barcode.rect
+#         barcode_info = barcode.data.decode('utf-8')
+#         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+#         font = cv2.FONT_HERSHEY_DUPLEX
+#         cv2.putText(frame, barcode_info, (x + 6, y - 6), font, 2.0, (255, 255, 255), 1)
+#     return frame, barcode_info
 
 
 def main():
