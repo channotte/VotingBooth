@@ -3,6 +3,8 @@ import mediapipe as mp  # for detecting fingers
 import time  # For adding time to the main file
 #from pyzbar import pyzbar  # for QR Code scanning
 import math
+mp_drawing = mp.solutions.drawing_utils
+mp_drawing_styles = mp.solutions.drawing_styles
 import qrcode
 
 
@@ -37,7 +39,13 @@ class handDetector():
                 cx, cy = int(lm.x * w), int(lm.y * h)
                 lmList.append([id, cx, cy])
                 if draw:
-                    cv2.circle(img, (cx, cy), 5, (255, 0, 255), cv2.FILLED)
+                    # cv2.circle(img, (cx, cy), 5, (255, 0, 255), cv2.FILLED)
+                    mp_drawing.draw_landmarks(
+                        img,
+                        lm,
+                        self.mpHands.HAND_CONNECTIONS,
+                        mp_drawing_styles.get_default_hand_landmarks_style(),
+                        mp_drawing_styles.get_default_hand_connections_style())
         return lmList
 
     def findPositionMultiHand(self, img, draw=False):
@@ -55,7 +63,13 @@ class handDetector():
                     cx, cy = int(lm.x * w), int(lm.y * h)
                     lmListHand.append([id, cx, cy])
                     if draw:
-                        cv2.circle(img, (cx, cy), 5, (255, 0, 255), cv2.FILLED)
+                        #cv2.circle(img, (cx, cy), 5, (255, 0, 255), cv2.FILLED)
+                        mp_drawing.draw_landmarks(
+                            img,
+                            lm,
+                            self.mpHands.HAND_CONNECTIONS,
+                            mp_drawing_styles.get_default_hand_landmarks_style(),
+                            mp_drawing_styles.get_default_hand_connections_style())
 
                 # print("Liste Hand : ", lmListHand)
                 lmList.append(lmListHand)

@@ -69,10 +69,12 @@ def gen_frames():  # generate frame by frame from camera
         success, frame = camera.read()
         frame = cv2.flip(frame, 1)
 
+        # Improve performances of capture
+        frame.flags.writeable = False
         if success:
 
             try:
-                # hand = detector.findHandedness(frame)
+                hand = detector.findHandedness(frame)
                 nbHands = detector.findNumberofHand(frame)
                 frame = detector.findHands(frame)
                 # lmList = detector.findPosition(frame, draw=False)
@@ -110,8 +112,9 @@ def gen_frames():  # generate frame by frame from camera
                 # frame, barcode_info = vbf.read_barcodes(frame)
 
                 # We store the result of each frame into the file (encrypted QR Code, datetime, number of fingers
-                # showing) file.write( datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ',' + 'NoVote' + ',
-                # ' + hand + ',' + str(totalFingers) + '\n')
+                # showing)
+                file.write(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ',' + 'NoVote' + ',' + hand + ','
+                            + str(totalFingers) + '\n')
 
                 identite_recupere = False
 

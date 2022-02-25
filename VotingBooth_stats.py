@@ -2,8 +2,8 @@ import pandas as pd
 import os
 
 header_list = ["date","hashKey","hand","vote"]
-df = pd.read_csv("C:\\VotingBooth\\data.csv",names=header_list)
-
+# df = pd.read_csv("C:\\VotingBooth\\data.csv",names=header_list)
+df = pd.read_csv("data.csv",names=header_list)
 results = pd.DataFrame(columns={'title','value'})
 
 # Get total number of records
@@ -34,4 +34,5 @@ results = results.append({"title":"Asso2",  'value':Asso2}, ignore_index=True)
 results = results.append({"title":"Asso3",  'value':Asso3}, ignore_index=True)
 results = results.append({"title":"Asso4",  'value':Asso4}, ignore_index=True)
 print(results)
-results.to_csv("C:\\VotingBooth\\stats.csv")
+# results.to_csv("C:\\VotingBooth\\stats.csv")
+results.to_csv("stats.csv")
