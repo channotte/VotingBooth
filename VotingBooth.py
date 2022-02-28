@@ -70,7 +70,7 @@ def gen_frames():  # generate frame by frame from camera
         frame = cv2.flip(frame, 1)
 
         # Improve performances of capture
-        frame.flags.writeable = False
+        # frame.flags.writeable = False
         if success:
 
             try:
