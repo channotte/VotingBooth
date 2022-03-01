@@ -1,12 +1,11 @@
 from flask import Flask, render_template, Response, request
 import cv2
-import datetime, time
+import time
 import os, sys
 import numpy as np
-from threading import Thread
+# from threading import Thread
 from PIL import Image
-import random
-import string
+
 
 import VotingBooth_functions as vbf  # for additional functions
 import hashlib  # for encrypting QR codes
@@ -14,10 +13,10 @@ import hashlib  # for encrypting QR codes
 im = Image.open("static/merci.jpg")
 
 # We store all results in a file on the local system
-file = open('data.csv', 'a+')
+# file = open('data.csv', 'a+')
 
 # We set parameters for hand detector
-detector = vbf.handDetector(detectionCon=0.90)
+detector = vbf.handDetector(detectionCon=0.75)
 
 # For the tipIds, we take the tip of each finger
 # figure 2.21 in https://google.github.io/mediapipe/solutions/hands.html
@@ -113,8 +112,11 @@ def gen_frames():  # generate frame by frame from camera
 
                 # We store the result of each frame into the file (encrypted QR Code, datetime, number of fingers
                 # showing)
-                file.write(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ',' + 'NoVote' + ',' + hand + ','
-                            + str(totalFingers) + '\n')
+                # file.write(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ',' + 'NoVote' + ',' + hand + ','
+                #             + str(totalFingers) + '\n')
+                #
+                collection_inauguration = vbf.connect_db()
+                vbf.write_db(collection_inauguration, totalFingers, hand)
 
                 identite_recupere = False
 
@@ -192,11 +194,12 @@ def gen_frames():  # generate frame by frame from camera
                         cv2.putText(frame, NumFingers, (50, 120), cv2.FONT_HERSHEY_SIMPLEX, 2, color_white, 5)
 
                         # We store the result of each frame into the file (encrypted QR Code, datetime, number of fingers showing)
-                        file.write(
-                            datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ','
-                            + hashed_code_main.hexdigest() + ','
-                            + hand + ','
-                            + str(totalFingers) + '\n')
+                        # file.write(
+                        #     datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ','
+                        #     + hashed_code_main.hexdigest() + ','
+                        #     + hand + ','
+                        #     + str(totalFingers) + '\n')
+                        vbf.write_db(collection_inauguration, totalFingers, hand, hashed_code_main.hexdigest())
 
                         # We show the frames (voting process)
                         ret, buffer = cv2.imencode('.jpg', frame)

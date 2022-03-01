@@ -3,10 +3,12 @@ import mediapipe as mp  # for detecting fingers
 import time  # For adding time to the main file
 #from pyzbar import pyzbar  # for QR Code scanning
 import math
+
+from pymongo import MongoClient
+import datetime
+#import qrcode
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
-import qrcode
-
 
 class handDetector():
     def __init__(self, mode=False, maxHands=2, detectionCon=0.5, trackCon=0.5):
@@ -256,6 +258,25 @@ def mean_no_none(l):
 #         font = cv2.FONT_HERSHEY_DUPLEX
 #         cv2.putText(frame, barcode_info, (x + 6, y - 6), font, 2.0, (255, 255, 255), 1)
 #     return frame, barcode_info
+
+
+
+## DATABASE ##
+
+def connect_db(server='localhost', port_number=27017):
+    conn = MongoClient(server, port_number)
+    db = conn.inauguration_test
+    collection = db.inauguration
+    return collection
+
+
+def write_db(collection, totalFingers, hand="", hash_val = "NoVote" ):
+    record = {"date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+              "Hash": hash_val,
+              "hand": hand,
+              "Vote": str(totalFingers)}
+    collection.insert_one(record)
+
 
 
 def main():
