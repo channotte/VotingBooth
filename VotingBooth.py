@@ -1,10 +1,12 @@
+import threading
+
 from flask import Flask, render_template, Response, request
 import cv2
 import time
 import os, sys
-import numpy as np
-# from threading import Thread
 from PIL import Image
+import random
+from turbo_flask import Turbo
 
 
 import VotingBooth_functions as vbf  # for additional functions
@@ -43,7 +45,7 @@ except OSError as error:
 
 # instatiate flask app
 app = Flask(__name__, template_folder='./templates')
-
+turbo = Turbo(app)
 
 def record(out):
     global rec_frame
@@ -68,24 +70,16 @@ def gen_frames():  # generate frame by frame from camera
         success, frame = camera.read()
         frame = cv2.flip(frame, 1)
 
-        # Improve performances of capture
-        # frame.flags.writeable = False
         if success:
 
             try:
                 hand = detector.findHandedness(frame)
                 nbHands = detector.findNumberofHand(frame)
                 frame = detector.findHands(frame)
-                # lmList = detector.findPosition(frame, draw=False)
 
                 # We count the number of fingers showing on the video frame
-                # totalFingers = vbf.fingerCount(lmList, tipIds, hand)
                 totalFingers = vbf.fingerCountBothHands(frame, tipIds, detector)
 
-                # We clearly state that there is no vote until a QR Code is scanned
-                # color = [62, 62, 62]
-                # color_white = [224, 224, 224]
-                # color_black = [180, 180, 180]
 
                 color = [62, 62, 62]
                 color_white = [226, 225, 227]
@@ -107,8 +101,6 @@ def gen_frames():  # generate frame by frame from camera
                 frame = cv2.putText(frame, 'Vote non pris en compte, montrez vos 10 doigts pour commencer', (25, 50),
                                     cv2.FONT_HERSHEY_SIMPLEX, 0.75, color_white, 2)
 
-                # We test each frame for the presence of a QR Code
-                # frame, barcode_info = vbf.read_barcodes(frame)
 
                 # We store the result of each frame into the file (encrypted QR Code, datetime, number of fingers
                 # showing)
@@ -136,12 +128,10 @@ def gen_frames():  # generate frame by frame from camera
 
                     mean_code_main = vbf.aggregate_dicts(liste_code_main, operation=vbf.mean_no_none)
                     print(mean_code_main)
-                    # print("len", len(liste_code_main), "\n contenu", mean_code_main)
                     identite_recupere = True
 
                 if identite_recupere:
 
-                    # hashed_code_main = str(code_main)
                     hashed_code_main = hashlib.sha256(str(mean_code_main).encode())
                     print(f"Identité des mains : {hashed_code_main} récupérée")
 
@@ -159,8 +149,7 @@ def gen_frames():  # generate frame by frame from camera
 
                         # Adding border and text to highlight voting period
                         seconds_left_to_vote = str(int(t_end - time.time()))
-                        # color = [90, 205, 82]
-                        #color_white = [238, 196, 120]
+
                         color = [231, 170, 61]
                         color_white = [241, 226, 139]
                         top, bottom, left, right = [5] * 4
@@ -168,8 +157,6 @@ def gen_frames():  # generate frame by frame from camera
                                                    value=color)
 
                         hand = detector.findHandedness(frame)
-                        # if hand == "Gauche":
-                        #    frame = cv2.flip(frame, 1)
 
                         frame = cv2.putText(frame, 'Vote en cours...' + seconds_left_to_vote + 's restantes',
                                             (26, 51),
@@ -210,7 +197,6 @@ def gen_frames():  # generate frame by frame from camera
                     # We set a 10 seconds timer to vote
                     t_end_thanks = time.time() + 5
 
-                    in_vote = False
                     while time.time() < t_end_thanks:
                         frame = im
                         ret, buffer = cv2.imencode('.jpg', frame)
@@ -229,6 +215,30 @@ def gen_frames():  # generate frame by frame from camera
             pass
 
 
+request = [{'$group': {'_id': '$Hash', 'Vote1': {'$sum': {'$cond': [{'$eq': ['$Vote', '1']}, 1, 0]}},
+                       'Vote2': {'$sum': {'$cond': [{'$eq': ['$Vote', '2']}, 1, 0]}},
+                       'Vote3': {'$sum': {'$cond': [{'$eq': ['$Vote', '3']}, 1, 0]}},
+                       'Vote4': {'$sum': {'$cond': [{'$eq': ['$Vote', '4']}, 1, 0]}},
+                       'Vote5': {'$sum': {'$cond': [{'$eq': ['$Vote', '5']}, 1, 0]}}}},
+           {'$addFields': {'Votemax': {'$max': ['$Vote1', '$Vote2', '$Vote3', '$Vote4', '$Vote5']}}},
+           {'$addFields': {'VoteValue': {'$cond': [{'$eq': ['$Votemax', '$Vote1']}, 'Vote1', {
+               '$cond': [{'$eq': ['$Votemax', '$Vote2']}, 'Vote2',
+                         {'$cond': [{'$eq': ['$Votemax', '$Vote3']}, 'Vote3', {
+                             '$cond': [{'$eq': ['$Votemax', '$Vote4']}, 'Vote4',
+                                       {'$cond': [{'$eq': ['$Votemax', '$Vote5']}, 'Vote5', 'Vote0']}]}]}]}]}}}]
+
+
+def compute_stats():
+    a = "Bonjour"
+    return a
+
+def update_load():
+    with app.app_context():
+        while True:
+            time.sleep(5)
+            turbo.push(turbo.replace(render_template('loadavg.html'), 'load'))
+
+
 @app.route('/')
 def index():
     return render_template('index_qcm.html')
@@ -238,52 +248,26 @@ def index():
 def video_feed():
     return Response(gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
+@app.context_processor
+def inject_load():
+    if sys.platform.startswith('linux'):
+        with open('/proc/loadavg', 'rt') as f:
+            load = f.read().split()[0:3]
+    else:
+        load = [int(random.random() * 100) / 100 for _ in range(3)]
+    return {'load1': load[0], 'load5': load[1], 'load15': load[2]}
 
-# @app.route('/requests',methods=['POST','GET'])
-# def tasks():
-#     global switch,camera
-#     if request.method == 'POST':
-#         if request.form.get('click') == 'Capture':
-#             global capture
-#             capture=1
-#         elif  request.form.get('grey') == 'Grey':
-#             global grey
-#             grey=not grey
-#         elif  request.form.get('neg') == 'Negative':
-#             global neg
-#             neg=not neg
-#         elif  request.form.get('face') == 'Face Only':
-#             global face
-#             face=not face
-#             if(face):
-#                 time.sleep(4)
-#         elif  request.form.get('stop') == 'Stop/Start':
-#
-#             if(switch==1):
-#                 switch=0
-#                 camera.release()
-#                 cv2.destroyAllWindows()
-#
-#             else:
-#                 camera = cv2.VideoCapture(0)
-#                 switch=1
-#         elif  request.form.get('rec') == 'Start/Stop Recording':
-#             global rec, out
-#             rec= not rec
-#             if(rec):
-#                 now=datetime.datetime.now()
-#                 fourcc = cv2.VideoWriter_fourcc(*'XVID')
-#                 out = cv2.VideoWriter('vid_{}.avi'.format(str(now).replace(":",'')), fourcc, 20.0, (640, 480))
-#                 #Start new thread for recording the video
-#                 thread = Thread(target = record, args=[out,])
-#                 thread.start()
-#             elif(rec==False):
-#                 out.release()
-#
-#
-#     elif request.method=='GET':
-#         return render_template('index.html')
-#     return render_template('index.html')
+
+# @app.route('/compute_stats_flask')
+# def compute_stats_flask():
+#     return Response(compute_stats())
+
+@app.before_first_request
+def before_first_request():
+    threading.Thread(target=update_load).start()
+
 
 if __name__ == '__main__':
     app.run()
+
+
