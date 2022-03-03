@@ -1,8 +1,15 @@
 <div id="load" class="load">
   <table>
-    <tr><th></th><th>Nb Votes</th><th>Total Votes</th><th>15 min</th></tr>
-    <tr><th>Vote 1:</th><td>{{ load1 }}</td><td>{{ load5 }}</td><td>{{ load15 }}</td></tr>
-    <tr><th>Vote 2:</th><td>{{ load1 }}</td><td>{{ load5 }}</td><td>{{ load15 }}</td></tr>
-    <tr><th>Vote 3:</th><td>{{ load1 }}</td><td>{{ load5 }}</td><td>{{ load15 }}</td></tr>
+    <tr><th></th><th>Nombre de Votes</th></tr>
+    <tr><th>Autenticité:</th><td>{{ vote1 }}</td></tr>
+    <tr><th>Ouverture :</th><td>{{ vote2 }}</td></tr>
+    <tr><th>Elégance :</th><td>{{ vote3 }}</td></tr>
+    <tr><th>Engagement :</th><td>{{ vote4 }}</td></tr>
+    <tr><th>Courage :</th><td>{{ vote5 }}</td></tr>
+    <tr><th>Nombre de frames :</th><td>{{ nbframe }}</td></tr>
+    <tr><th>Taux d'utilisation:</th><td>{{ tauxutil }}</td></tr>
+    <tr><th>Main Gauche :</th><td>{{ gauche }}</td></tr>
+    <tr><th>Main droite :</th><td>{{ droite }}</td></tr>
+    <tr><th>Image :</th><td> <img src="{{ url_for('static', filename='Satisfaction_francais_black_2.png') }}" width=100%></td></tr>
   </table>
 </div>

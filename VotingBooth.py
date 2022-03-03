@@ -1,5 +1,6 @@
 import threading
 
+import pandas as pd
 from flask import Flask, render_template, Response, request
 import cv2
 import time
@@ -7,10 +8,12 @@ import os, sys
 from PIL import Image
 import random
 from turbo_flask import Turbo
-
+import connexion_mongodb as mongof
 
 import VotingBooth_functions as vbf  # for additional functions
 import hashlib  # for encrypting QR codes
+import base64
+from io import BytesIO
 
 im = Image.open("static/merci.jpg")
 
@@ -29,6 +32,15 @@ camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 camera.set(3, 1024)  # 3 = width
 camera.set(4, 768)  # 4 = height
 
+global collection_inauguration, request
+
+collection_inauguration = mongof.connect_db()
+request = [{'$group': {'_id': '$Hash', 'Vote1': {'$sum': {'$cond': [{'$eq': ['$Vote', '1']}, 1, 0]}},
+                       'Vote2': {'$sum': {'$cond': [{'$eq': ['$Vote', '2']}, 1, 0]}},
+                       'Vote3': {'$sum': {'$cond': [{'$eq': ['$Vote', '3']}, 1, 0]}},
+                       'Vote4': {'$sum': {'$cond': [{'$eq': ['$Vote', '4']}, 1, 0]}},
+                       'Vote5': {'$sum': {'$cond': [{'$eq': ['$Vote', '5']}, 1, 0]}}}}]
+
 global capture, rec_frame, grey, switch, neg, face, rec, out
 capture = 0
 grey = 0
@@ -43,9 +55,10 @@ try:
 except OSError as error:
     pass
 
-# instatiate flask app
+# instantiate flask app
 app = Flask(__name__, template_folder='./templates')
 turbo = Turbo(app)
+
 
 def record(out):
     global rec_frame
@@ -80,7 +93,6 @@ def gen_frames():  # generate frame by frame from camera
                 # We count the number of fingers showing on the video frame
                 totalFingers = vbf.fingerCountBothHands(frame, tipIds, detector)
 
-
                 color = [62, 62, 62]
                 color_white = [226, 225, 227]
                 color_black = [154, 153, 157]
@@ -101,14 +113,13 @@ def gen_frames():  # generate frame by frame from camera
                 frame = cv2.putText(frame, 'Vote non pris en compte, montrez vos 10 doigts pour commencer', (25, 50),
                                     cv2.FONT_HERSHEY_SIMPLEX, 0.75, color_white, 2)
 
-
                 # We store the result of each frame into the file (encrypted QR Code, datetime, number of fingers
                 # showing)
                 # file.write(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ',' + 'NoVote' + ',' + hand + ','
                 #             + str(totalFingers) + '\n')
                 #
-                collection_inauguration = vbf.connect_db()
-                vbf.write_db(collection_inauguration, totalFingers, hand)
+                # collection_inauguration = vbf.connect_db()
+                mongof.write_db(collection_inauguration, totalFingers, hand)
 
                 identite_recupere = False
 
@@ -186,7 +197,7 @@ def gen_frames():  # generate frame by frame from camera
                         #     + hashed_code_main.hexdigest() + ','
                         #     + hand + ','
                         #     + str(totalFingers) + '\n')
-                        vbf.write_db(collection_inauguration, totalFingers, hand, hashed_code_main.hexdigest())
+                        mongof.write_db(collection_inauguration, totalFingers, hand, hashed_code_main.hexdigest())
 
                         # We show the frames (voting process)
                         ret, buffer = cv2.imencode('.jpg', frame)
@@ -228,14 +239,14 @@ request = [{'$group': {'_id': '$Hash', 'Vote1': {'$sum': {'$cond': [{'$eq': ['$V
                                        {'$cond': [{'$eq': ['$Votemax', '$Vote5']}, 'Vote5', 'Vote0']}]}]}]}]}}}]
 
 
-def compute_stats():
-    a = "Bonjour"
-    return a
+# def compute_stats():
+#     a = "Bonjour"
+#     return a
 
 def update_load():
     with app.app_context():
         while True:
-            time.sleep(5)
+            time.sleep(10)
             turbo.push(turbo.replace(render_template('loadavg.html'), 'load'))
 
 
@@ -248,19 +259,23 @@ def index():
 def video_feed():
     return Response(gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
+
 @app.context_processor
 def inject_load():
-    if sys.platform.startswith('linux'):
-        with open('/proc/loadavg', 'rt') as f:
-            load = f.read().split()[0:3]
-    else:
-        load = [int(random.random() * 100) / 100 for _ in range(3)]
-    return {'load1': load[0], 'load5': load[1], 'load15': load[2]}
+    df_vote = mongof.make_request(collection_inauguration, request)
+    df_votants = mongof.retrieve_votants(df_vote)
+    number_frame = collection_inauguration.count_documents({})
+    nb_gauche = collection_inauguration.count_documents({'hand': 'Gauche'})
+    nb_droite = collection_inauguration.count_documents({'hand': 'Droite'})
+    taux_utilisation = (nb_droite + nb_gauche) / number_frame
+
+    img_pie = mongof.draw_pie(pd.DataFrame(data=[nb_droite, nb_gauche], index=['Main Droite', 'Main Gauche']), 'test.png')
 
 
-# @app.route('/compute_stats_flask')
-# def compute_stats_flask():
-#     return Response(compute_stats())
+    return {'vote1': df_votants[0], 'vote2': df_votants[1], 'vote3': df_votants[2], 'vote4': df_votants[3],
+            'vote5': df_votants[4], 'nbframe': number_frame, 'tauxutil': taux_utilisation, 'gauche': nb_gauche,
+            'droite': nb_droite, 'img' : img_pie}
+
 
 @app.before_first_request
 def before_first_request():
@@ -269,5 +284,3 @@ def before_first_request():
 
 if __name__ == '__main__':
     app.run()
-
-

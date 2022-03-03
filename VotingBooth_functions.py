@@ -261,24 +261,6 @@ def mean_no_none(l):
 
 
 
-## DATABASE ##
-
-def connect_db(server='localhost', port_number=27017):
-    conn = MongoClient(server, port_number)
-    db = conn.inauguration_test
-    collection = db.inauguration
-    return collection
-
-
-def write_db(collection, totalFingers, hand="", hash_val = "NoVote" ):
-    record = {"date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-              "Hash": hash_val,
-              "hand": hand,
-              "Vote": str(totalFingers)}
-    collection.insert_one(record)
-
-
-
 def main():
     pTime = 0
     cTime = 0
