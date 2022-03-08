@@ -2,26 +2,89 @@
 <html>
   <head>
     <style>
+    * {
+         box-sizing: border-box;
+      }
+
       .load {
-        float: right;
-        width: 400px;
+
+        width: 100%;
         border: 1px solid black;
         margin-left: 10px;
-        margin-bottom: 10px;
+        margin-right : 10px;
+
         padding: 10px;
         color  : #00B0F0;
       }
       .load th, .load td {
-        padding: 6px;
+        border: 1px solid white;
+
         text-align: center;
+        font-weight: bold;
+        font-size : 20px
+
+        margin: 12px 12px 12px 12px 12px;
+        padding: 12px 12px 12px 12px 12px;
+
+      }
+
+      .table {
+        display:table;
+        width:100%;
+        table-layout:fixed;
+        border: 1px solid white;
+        text-align:center
+      }
+
+      .table_cell{
+        display:table-cell;
+        width:100px;
+        font-weight: bold;
+        font-size : 20px
+        border: 1px solid white;
+        text-align:center
+      }
+
+      .column {
+        float: left;
+        width: 50%;
+        padding: 10px;
+        height: 300px;
+       }
+
+
+
+
+       .row:after {
+          content: "";
+          display: table;
+          clear: both;
+          text-align: center;
+      }
+
+      .center {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
 
       }
     </style>
 
     {{ turbo() }}
   </head>
-  <body>
+  <body style="background-color:#272727">
+  <div class="row">
+    	<img src="{{ url_for('static', filename='question_satisfaction_black_3.png') }} "  class="center"  width=40%><br>
+
+  <div class="column">
+	  {% block content %}
+      {% endblock %}
+  </div>
+  <div class="column">
+    <h3 style = "color  : white; text-align:center"> Résultats des votes</h3>
     {% include "loadavg.html" %}
-    {% block content %}{% endblock %}
+
+  </div>
+  </div>
   </body>
 </html>

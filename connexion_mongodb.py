@@ -1,9 +1,18 @@
 import datetime, time
 from pymongo import MongoClient
-import pprint
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
+# import matplotlib
+# matplotlib.use("Qt5Agg")
+# import matplotlib.pyplot as plt
+# from matplotlib.figure import Figure
+from PIL import Image
+import io
+
+pd.options.plotting.backend = "plotly"
+import plotly
+import plotly.express as px
+import base64
+
 
 def connect_db(server='localhost', port_number=27017):
     conn = MongoClient(server, port_number)
@@ -12,7 +21,10 @@ def connect_db(server='localhost', port_number=27017):
     return collection
 
 
-def write_db(collection, totalFingers, hand="", hash_val = "NoVote" ):
+def write_db(collection, totalFingers, hand="", hash_val="NoVote"):
+    if totalFingers == 'None':
+        totalFingers = '0'
+
     record = {"date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
               "Hash": hash_val,
               "hand": hand,
@@ -21,59 +33,85 @@ def write_db(collection, totalFingers, hand="", hash_val = "NoVote" ):
 
 
 def make_request(collection, request):
-    liste_vote = list(collection.aggregate(request))
-    df_vote = pd.DataFrame(liste_vote)
+    liste_vote = []
+
+    try:
+        liste_vote = list(collection.aggregate(request))
+    finally:
+        df_vote = pd.DataFrame(liste_vote)
 
     return df_vote
 
 
 def retrieve_votants(df_vote):
-    df_votants = df_vote[~df_vote["_id"].str.contains("NoVote")]
-    df_counts = df_votants['VoteValue'].value_counts().sort_index()
-    return df_counts
+    df_counts = []
+    try:
+        df_votants = df_vote[~df_vote["_id"].str.contains("NoVote")]
+        df_counts = df_votants['VoteValue'].value_counts().sort_index()
+    finally:
+        return df_counts
 
 
-def draw_pie(dataframe, filename):
-    ax = dataframe.plot.pie(y=0, colormap = 'Pastel1')
-    ax.figure.savefig(filename, format='png')
-    return ax
+# def draw_pie(dataframe, filename, other):
+#     fig = px.pie(dataframe, values='tip', names='day')
+#
+#     ax = dataframe.plot.pie(y=0, colormap='Pastel1', autopct='%.0f%%', ylabel=' ', title=str(other))
+#     ax.figure.savefig(filename, format='png')
+#     # return ax
+
+
+def draw_pie_plotly(dataframe, filename, other, engine="kaleido"):
+    fig = px.pie(dataframe, values='valeur', names=dataframe.index, title=str(other))
+    fig.write_image(filename, format='png', engine=engine)
+
+
+def draw_horizontal_bar_plotly(dataframe, filename, title, engine="kaleido"):
+
+    fig = px.bar(dataframe, x="vote", y="stack", title=str(title), text_auto=True, barmode='relative',
+                 orientation="h", labels={},
+                 color="Valeurs", color_discrete_sequence=px.colors.qualitative.Bold, height=250)
+    fig.update_xaxes(visible=False)
+    fig.update_yaxes(visible=False)
+    fig.update_layout(legend=dict(orientation="h", yanchor="top", y=0, xanchor="center", x=0.5))
+    fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color="#f7f7f7", barnorm = "percent")
+    fig.write_image(filename, format='png', engine=engine)
+
+
+def encode_image(filename):
+    im = Image.open(filename)
+    data = io.BytesIO()
+    im.save(data, "PNG")
+    encoded_img_data = base64.b64encode(data.getvalue())
+    return encoded_img_data
 
 
 def main():
-    # t_debut = time.time()
-    #
-    # collection_inauguration = connect_db()
-    # # write_db(collection_inauguration, totalFingers, hand)
-    # request = [{'$group': {'_id': '$Hash', 'Vote1': {'$sum': {'$cond': [{'$eq': ['$Vote', '1']}, 1, 0]}},
-    #                        'Vote2': {'$sum': {'$cond': [{'$eq': ['$Vote', '2']}, 1, 0]}},
-    #                        'Vote3': {'$sum': {'$cond': [{'$eq': ['$Vote', '3']}, 1, 0]}},
-    #                        'Vote4': {'$sum': {'$cond': [{'$eq': ['$Vote', '4']}, 1, 0]}},
-    #                        'Vote5': {'$sum': {'$cond': [{'$eq': ['$Vote', '5']}, 1, 0]}}}}]
-    #
-    # request2 = [{'$group': {'_id': '$Hash', 'Vote1': {'$sum': {'$cond': [{'$eq': ['$Vote', '1']}, 1, 0]}},
-    #                         'Vote2': {'$sum': {'$cond': [{'$eq': ['$Vote', '2']}, 1, 0]}},
-    #                         'Vote3': {'$sum': {'$cond': [{'$eq': ['$Vote', '3']}, 1, 0]}},
-    #                         'Vote4': {'$sum': {'$cond': [{'$eq': ['$Vote', '4']}, 1, 0]}},
-    #                         'Vote5': {'$sum': {'$cond': [{'$eq': ['$Vote', '5']}, 1, 0]}}}},
-    #             {'$addFields': {'Votemax': {'$max': ['$Vote1', '$Vote2', '$Vote3', '$Vote4', '$Vote5']}}},
-    #             {'$addFields': {'VoteValue': {'$cond': [{'$eq': ['$Votemax', '$Vote1']}, 'Vote1', {
-    #                 '$cond': [{'$eq': ['$Votemax', '$Vote2']}, 'Vote2',
-    #                           {'$cond': [{'$eq': ['$Votemax', '$Vote3']}, 'Vote3', {
-    #                               '$cond': [{'$eq': ['$Votemax', '$Vote4']}, 'Vote4',
-    #                                         {'$cond': [{'$eq': ['$Votemax', '$Vote5']}, 'Vote5', 'Vote0']}]}]}]}]}}}]
-    #
-    # # liste_vote = list(collection_inauguration.aggregate(request2))
-    # # pprint.pprint(liste_vote)
-    # df_vote = make_request(collection_inauguration, request)
-    # df_votants = retrieve_votants(df_vote)
-    # collection_inauguration.count()
-    # print(df_votants.head(10))
-    # t_end = time.time()
-    #
-    # print("Temps execution", t_end - t_debut)
+    t_debut = time.time()
+    totalFingers = "5"
+    hand = "Droite"
+    collection_inauguration = connect_db()
+    write_db(collection_inauguration, totalFingers, hand)
 
-    ax = pd.DataFrame(data=[232, 888], index=['Main Droite', 'Main Gauche']).plot.pie(y=0)
-    ax.figure.savefig('abc.png', format='png')
+    request = [{'$group': {'_id': '$Hash', 'Vote1': {'$sum': {'$cond': [{'$eq': ['$Vote', '1']}, 1, 0]}},
+                           'Vote2': {'$sum': {'$cond': [{'$eq': ['$Vote', '2']}, 1, 0]}},
+                           'Vote3': {'$sum': {'$cond': [{'$eq': ['$Vote', '3']}, 1, 0]}},
+                           'Vote4': {'$sum': {'$cond': [{'$eq': ['$Vote', '4']}, 1, 0]}},
+                           'Vote5': {'$sum': {'$cond': [{'$eq': ['$Vote', '5']}, 1, 0]}}}},
+               {'$addFields': {'Votemax': {'$max': ['$Vote1', '$Vote2', '$Vote3', '$Vote4', '$Vote5']}}},
+               {'$addFields': {'VoteValue': {'$cond': [{'$eq': ['$Votemax', '$Vote1']}, 'Vote1', {
+                   '$cond': [{'$eq': ['$Votemax', '$Vote2']}, 'Vote2',
+                             {'$cond': [{'$eq': ['$Votemax', '$Vote3']}, 'Vote3', {
+                                 '$cond': [{'$eq': ['$Votemax', '$Vote4']}, 'Vote4',
+                                           {'$cond': [{'$eq': ['$Votemax', '$Vote5']}, 'Vote5', 'Vote0']}]}]}]}]}}}]
+
+    df_vote = make_request(collection_inauguration, request)
+    df_votants = retrieve_votants(df_vote)
+    collection_inauguration.count()
+    print(df_votants.head(10))
+    t_end = time.time()
+
+    print("Temps execution", t_end - t_debut)
+
 
 if __name__ == "__main__":
     main()

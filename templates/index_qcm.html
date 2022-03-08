@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-
+{% block content %}
 <head>
     <!-- Required meta tags -->
     <meta charset="utf-8">
@@ -10,20 +10,14 @@
 	<link rel = "icon" href = "{{ url_for('static', filename='logo_html.png') }}"
         type = "image/x-icon">
   </head>
-{% block content %}
+
 
 <body style="background-color:#272727">
-
-<table class = "center" width=50%>
-
-
-
-	<tr>
-		<td style="text-align: center; vertical-align: middle; "><br><br><img src="{{ url_for('static', filename='question_satisfaction_black_3.png') }}" width=100%><br><br></td>
-	</tr>
+<h3 style = "color  : white; text-align:center"> Montrez vos 10 doigts pour commencer et votez entre 1 et 5 </h3>
+<table class = "center" width=100%>
 
 	<tr >
-		<td style="text-align: center; vertical-align: middle;" width=80%><br><br><br><img src="{{ url_for('static', filename='Satisfaction_francais_black_2.png') }}" width=100%><br><br><br><br><br></td>
+		<td style="text-align: center; vertical-align: middle;" width=50%><img src="{{ url_for('static', filename='Satisfaction_francais_black_2.png') }}" width=80%><br></td>
 	</tr>
 
 <!--	<tr>-->
@@ -32,12 +26,12 @@
 <!--    </tr>-->
 
 	<tr>
-		<td style="text-align: center; vertical-align: middle;"><img src="{{ url_for('video_feed') }}" width="80%"><br></td>
+		<td style="text-align: center; vertical-align: middle;"><img src="{{ url_for('video_feed') }}" width="80%"></td>
     </tr>
 
-		<tr>
-		<td style="text-align: right; vertical-align: bottom;"><br><br><img src="{{ url_for('static', filename='onepoint_black.png') }}" width=30%><br></td>
-	</tr>
+<!--		<tr>-->
+<!--		<td style="text-align: right; vertical-align: bottom;"><img src="{{ url_for('static', filename='onepoint_black.png') }}" width=30%></td>-->
+<!--	</tr>-->
 			</table>
 
 

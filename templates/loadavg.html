@@ -1,15 +1,36 @@
 <div id="load" class="load">
-  <table>
-    <tr><th></th><th>Nombre de Votes</th></tr>
-    <tr><th>Autenticité:</th><td>{{ vote1 }}</td></tr>
-    <tr><th>Ouverture :</th><td>{{ vote2 }}</td></tr>
-    <tr><th>Elégance :</th><td>{{ vote3 }}</td></tr>
-    <tr><th>Engagement :</th><td>{{ vote4 }}</td></tr>
-    <tr><th>Courage :</th><td>{{ vote5 }}</td></tr>
-    <tr><th>Nombre de frames :</th><td>{{ nbframe }}</td></tr>
-    <tr><th>Taux d'utilisation:</th><td>{{ tauxutil }}</td></tr>
-    <tr><th>Main Gauche :</th><td>{{ gauche }}</td></tr>
-    <tr><th>Main droite :</th><td>{{ droite }}</td></tr>
-    <tr><th>Image :</th><td> <img src="{{ url_for('static', filename='Satisfaction_francais_black_2.png') }}" width=100%></td></tr>
-  </table>
+
+  <div class="table">
+    <div class="table_cell"><img src="{{ url_for('static', filename='Authenticite.png') }} " width=100%></div>
+    <div class="table_cell"><img src="{{ url_for('static', filename='ouverture.png') }} " width=60%></div>
+      <div class="table_cell"><img src="{{ url_for('static', filename='elegance.png') }} " width=60%></div>
+      <div class="table_cell"><img src="{{ url_for('static', filename='engagement.png') }} " width=80% style="transform:rotate(-10deg);"></div>
+    <div class="table_cell"><img src="{{ url_for('static', filename='courage.png') }} " width=70%></div>
+  </div>
+
+  <div class="table">
+    <div class="table_cell">{{ vote1 }}</div>
+    <div class="table_cell">{{ vote2 }}</div>
+      <div class="table_cell">{{ vote3 }}</div>
+      <div class="table_cell">{{ vote4 }}</div>
+    <div class="table_cell">{{ vote5 }}</div>
+  </div>
+
+  <div class="table">
+    <div class="table_cell"><img src="data:image/png;base64,{{ img_data.decode('utf-8', 'ignore') }}" width=100%></div>
+    <div class="table_cell"><img src="data:image/png;base64,{{ img_repartition.decode('utf-8', 'ignore') }}" width=100%></div>
+  </div>
+
+  <div class="table">
+    <div class="table_cell">Nombre de frames </div>
+    <div class="table_cell">Taux d'utilisation </div>
+    <div class="table_cell">Dernière actualisation </div>
+  </div>
+
+  <div class="table">
+    <div class="table_cell">{{ nbframe }}</div>
+    <div class="table_cell">{{ tauxutil }} %</div>
+    <div class="table_cell">{{ refresh }} </div>
+  </div>
+
 </div>

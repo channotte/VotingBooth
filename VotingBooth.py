@@ -3,18 +3,20 @@ import threading
 import pandas as pd
 from flask import Flask, render_template, Response, request
 import cv2
-import time
 import os, sys
 from PIL import Image
-import random
 from turbo_flask import Turbo
 import connexion_mongodb as mongof
-
+pd.options.plotting.backend = "plotly"
 import VotingBooth_functions as vbf  # for additional functions
 import hashlib  # for encrypting QR codes
 import base64
-from io import BytesIO
-
+import io
+# import matplotlib
+# matplotlib.use("Qt5Agg")
+# import multiprocessing
+import time
+from datetime import datetime
 im = Image.open("static/merci.jpg")
 
 # We store all results in a file on the local system
@@ -35,11 +37,22 @@ camera.set(4, 768)  # 4 = height
 global collection_inauguration, request
 
 collection_inauguration = mongof.connect_db()
+# request = [{'$group': {'_id': '$Hash', 'Vote1': {'$sum': {'$cond': [{'$eq': ['$Vote', '1']}, 1, 0]}},
+#                        'Vote2': {'$sum': {'$cond': [{'$eq': ['$Vote', '2']}, 1, 0]}},
+#                        'Vote3': {'$sum': {'$cond': [{'$eq': ['$Vote', '3']}, 1, 0]}},
+#                        'Vote4': {'$sum': {'$cond': [{'$eq': ['$Vote', '4']}, 1, 0]}},
+#                        'Vote5': {'$sum': {'$cond': [{'$eq': ['$Vote', '5']}, 1, 0]}}}}]
 request = [{'$group': {'_id': '$Hash', 'Vote1': {'$sum': {'$cond': [{'$eq': ['$Vote', '1']}, 1, 0]}},
                        'Vote2': {'$sum': {'$cond': [{'$eq': ['$Vote', '2']}, 1, 0]}},
                        'Vote3': {'$sum': {'$cond': [{'$eq': ['$Vote', '3']}, 1, 0]}},
                        'Vote4': {'$sum': {'$cond': [{'$eq': ['$Vote', '4']}, 1, 0]}},
-                       'Vote5': {'$sum': {'$cond': [{'$eq': ['$Vote', '5']}, 1, 0]}}}}]
+                       'Vote5': {'$sum': {'$cond': [{'$eq': ['$Vote', '5']}, 1, 0]}}}},
+           {'$addFields': {'Votemax': {'$max': ['$Vote1', '$Vote2', '$Vote3', '$Vote4', '$Vote5']}}},
+           {'$addFields': {'VoteValue': {'$cond': [{'$eq': ['$Votemax', '$Vote1']}, 'Vote1', {
+               '$cond': [{'$eq': ['$Votemax', '$Vote2']}, 'Vote2',
+                         {'$cond': [{'$eq': ['$Votemax', '$Vote3']}, 'Vote3', {
+                             '$cond': [{'$eq': ['$Votemax', '$Vote4']}, 'Vote4',
+                                       {'$cond': [{'$eq': ['$Votemax', '$Vote5']}, 'Vote5', 'Vote0']}]}]}]}]}}}]
 
 global capture, rec_frame, grey, switch, neg, face, rec, out
 capture = 0
@@ -58,7 +71,7 @@ except OSError as error:
 # instantiate flask app
 app = Flask(__name__, template_folder='./templates')
 turbo = Turbo(app)
-
+app.config['SERVER_NAME'] = "127.0.0.1:5000"
 
 def record(out):
     global rec_frame
@@ -113,12 +126,6 @@ def gen_frames():  # generate frame by frame from camera
                 frame = cv2.putText(frame, 'Vote non pris en compte, montrez vos 10 doigts pour commencer', (25, 50),
                                     cv2.FONT_HERSHEY_SIMPLEX, 0.75, color_white, 2)
 
-                # We store the result of each frame into the file (encrypted QR Code, datetime, number of fingers
-                # showing)
-                # file.write(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ',' + 'NoVote' + ',' + hand + ','
-                #             + str(totalFingers) + '\n')
-                #
-                # collection_inauguration = vbf.connect_db()
                 mongof.write_db(collection_inauguration, totalFingers, hand)
 
                 identite_recupere = False
@@ -191,12 +198,6 @@ def gen_frames():  # generate frame by frame from camera
                         cv2.putText(frame, NumFingers, (51, 121), cv2.FONT_HERSHEY_SIMPLEX, 2, color, 5)
                         cv2.putText(frame, NumFingers, (50, 120), cv2.FONT_HERSHEY_SIMPLEX, 2, color_white, 5)
 
-                        # We store the result of each frame into the file (encrypted QR Code, datetime, number of fingers showing)
-                        # file.write(
-                        #     datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ','
-                        #     + hashed_code_main.hexdigest() + ','
-                        #     + hand + ','
-                        #     + str(totalFingers) + '\n')
                         mongof.write_db(collection_inauguration, totalFingers, hand, hashed_code_main.hexdigest())
 
                         # We show the frames (voting process)
@@ -226,23 +227,6 @@ def gen_frames():  # generate frame by frame from camera
             pass
 
 
-request = [{'$group': {'_id': '$Hash', 'Vote1': {'$sum': {'$cond': [{'$eq': ['$Vote', '1']}, 1, 0]}},
-                       'Vote2': {'$sum': {'$cond': [{'$eq': ['$Vote', '2']}, 1, 0]}},
-                       'Vote3': {'$sum': {'$cond': [{'$eq': ['$Vote', '3']}, 1, 0]}},
-                       'Vote4': {'$sum': {'$cond': [{'$eq': ['$Vote', '4']}, 1, 0]}},
-                       'Vote5': {'$sum': {'$cond': [{'$eq': ['$Vote', '5']}, 1, 0]}}}},
-           {'$addFields': {'Votemax': {'$max': ['$Vote1', '$Vote2', '$Vote3', '$Vote4', '$Vote5']}}},
-           {'$addFields': {'VoteValue': {'$cond': [{'$eq': ['$Votemax', '$Vote1']}, 'Vote1', {
-               '$cond': [{'$eq': ['$Votemax', '$Vote2']}, 'Vote2',
-                         {'$cond': [{'$eq': ['$Votemax', '$Vote3']}, 'Vote3', {
-                             '$cond': [{'$eq': ['$Votemax', '$Vote4']}, 'Vote4',
-                                       {'$cond': [{'$eq': ['$Votemax', '$Vote5']}, 'Vote5', 'Vote0']}]}]}]}]}}}]
-
-
-# def compute_stats():
-#     a = "Bonjour"
-#     return a
-
 def update_load():
     with app.app_context():
         while True:
@@ -262,25 +246,33 @@ def video_feed():
 
 @app.context_processor
 def inject_load():
+    refresh = str(datetime.now(tz=None))
     df_vote = mongof.make_request(collection_inauguration, request)
     df_votants = mongof.retrieve_votants(df_vote)
-    number_frame = collection_inauguration.count_documents({})
+    number_frame = 0 if collection_inauguration.count_documents({}) is None else collection_inauguration.count_documents({})
     nb_gauche = collection_inauguration.count_documents({'hand': 'Gauche'})
     nb_droite = collection_inauguration.count_documents({'hand': 'Droite'})
-    taux_utilisation = (nb_droite + nb_gauche) / number_frame
+    taux_utilisation = str(0 if number_frame == 0 else round((nb_droite + nb_gauche) / number_frame, 4)*100)
 
-    img_pie = mongof.draw_pie(pd.DataFrame(data=[nb_droite, nb_gauche], index=['Main Droite', 'Main Gauche']), 'test.png')
+    data = {"vote": df_votants.to_list(),
+            "value": ['Authenticité', "Ouverture", "Elégance", "Engagement", "Courage"],
+            'stack': [0, 0, 0, 0, 0]}
+    mongof.draw_horizontal_bar_plotly(pd.DataFrame(data), 'static/repartition.png', refresh)
+    encoded_repartition = mongof.encode_image('static/repartition.png')
 
+    mongof.draw_pie_plotly(pd.DataFrame(data=[nb_droite, nb_gauche], index=['Main Droite', 'Main Gauche'], columns=['valeur']),
+                              'static/test.png', refresh)
+    encoded_img_data = mongof.encode_image("static/test.png")
 
     return {'vote1': df_votants[0], 'vote2': df_votants[1], 'vote3': df_votants[2], 'vote4': df_votants[3],
-            'vote5': df_votants[4], 'nbframe': number_frame, 'tauxutil': taux_utilisation, 'gauche': nb_gauche,
-            'droite': nb_droite, 'img' : img_pie}
+            'vote5': df_votants[4], 'nbframe': number_frame, 'tauxutil': taux_utilisation, 'img_data' : encoded_img_data,
+            'img_repartition': encoded_repartition, 'refresh' : refresh}
 
 
 @app.before_first_request
 def before_first_request():
     threading.Thread(target=update_load).start()
-
+    # multiprocessing.Process(target=update_load, args=()).start()
 
 if __name__ == '__main__':
     app.run()
