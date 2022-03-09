@@ -256,6 +256,7 @@ def inject_load():
     nb_gauche = collection_inauguration.count_documents({'hand': 'Gauche'})
     nb_droite = collection_inauguration.count_documents({'hand': 'Droite'})
     taux_utilisation = str(0 if number_frame == 0 else round_up(100*(nb_droite + nb_gauche) / number_frame, 2))
+    str_nbframe = format(number_frame, ',d').replace(',', ' ')
 
     data = {"vote": df_votants.to_list(),
             "Valeurs": ['Authenticité', "Ouverture", "Elégance", "Engagement", "Courage"],
@@ -268,7 +269,7 @@ def inject_load():
     encoded_img_data = mongof.encode_image("static/test.png")
 
     return {'vote1': df_votants[0], 'vote2': df_votants[1], 'vote3': df_votants[2], 'vote4': df_votants[3],
-            'vote5': df_votants[4], 'nbframe': number_frame, 'tauxutil': taux_utilisation, 'img_data' : encoded_img_data,
+            'vote5': df_votants[4], 'nbframe': str_nbframe, 'tauxutil': taux_utilisation, 'img_data' : encoded_img_data,
             'img_repartition': encoded_repartition, 'refresh' : refresh}
 
 

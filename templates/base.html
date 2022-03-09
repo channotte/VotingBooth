@@ -20,8 +20,8 @@
         font-weight: bold;
         font-size : 20px
 
-        margin: 12px 12px 12px 12px 12px;
-        padding: 12px 12px 12px 12px 12px;
+        margin: 5px 5px 5px 5px 5px;
+        padding: 5px 5px 5px 5px 5px;
 
       }
 
@@ -29,8 +29,8 @@
         display:table;
         width:100%;
         table-layout:fixed;
-        border: 1px solid #3E3E3E;
-        text-align:center
+        text-align:center;
+        padding: 5px;
 
       }
 
@@ -38,7 +38,7 @@
         display:table-cell;
         width:100px;
         font-weight: bold;
-        font-size : 10px;
+        font-size : 17px;
         text-align:center
       }
 
@@ -46,7 +46,7 @@
         float: left;
         width: 50%;
         padding: 10px;
-        height: 300px;
+        height: 90%;
        }
 
 
@@ -70,8 +70,7 @@
         align-content: center;
         align-items : center;
 
-
-      }
+     }
     </style>
 
     {{ turbo() }}
@@ -84,6 +83,14 @@
 	  {% block content %}
       {% endblock %}
   </div>
+    <div class="vl" style="
+    border-left: 2px solid #3E3E3E;
+    height: 70%;
+    position: absolute;
+    left: 50%;
+    margin-top: 75px;">
+
+    </div>
   <div class="column">
     <h3 style = "color  : white; text-align:center"> Résultats des votes</h3>
     {% include "loadavg.html" %}
