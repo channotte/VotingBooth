@@ -60,20 +60,30 @@ def retrieve_votants(df_vote):
 #     # return ax
 
 
-def draw_pie_plotly(dataframe, filename, other, engine="kaleido"):
-    fig = px.pie(dataframe, values='valeur', names=dataframe.index, title=str(other))
+def draw_pie_plotly(dataframe, filename, title, engine="kaleido"):
+    fig = px.pie(dataframe, values='valeur', names=dataframe.index, title=str(title),
+                 color_discrete_sequence=px.colors.qualitative.Pastel, hole=0.4)
+    fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color="#f7f7f7")
+    fig.update_layout(showlegend=False)
+    fig.update_traces(textposition='inside', textinfo='percent+label', marker=dict(line=dict(color="#f7f7f7", width=3)))
+    fig.update_layout(title=dict(yanchor="bottom", y=0.95, xanchor="center", x=0.5))
+    fig.update_layout(margin=dict(l=20, r=20, b=5, t=40, pad=0))
+
     fig.write_image(filename, format='png', engine=engine)
 
 
 def draw_horizontal_bar_plotly(dataframe, filename, title, engine="kaleido"):
-
     fig = px.bar(dataframe, x="vote", y="stack", title=str(title), text_auto=True, barmode='relative',
                  orientation="h", labels={},
-                 color="Valeurs", color_discrete_sequence=px.colors.qualitative.Bold, height=250)
-    fig.update_xaxes(visible=False)
+                 color="Valeurs", color_discrete_sequence=px.colors.qualitative.Pastel, height=220, width=1400)
     fig.update_yaxes(visible=False)
-    fig.update_layout(legend=dict(orientation="h", yanchor="top", y=0, xanchor="center", x=0.5))
-    fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color="#f7f7f7", barnorm = "percent")
+    fig.update_layout(xaxis={"ticksuffix": "%"}, xaxis_title=None)
+    fig.update_xaxes(tickformat='.2f')
+    fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=1, xanchor="center", x=0.5),
+                      uniformtext_minsize=10, uniformtext_mode='hide')
+    fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color="#f7f7f7",
+                      barnorm="percent")
+    fig.update_traces(textposition='inside', marker=dict(line=dict(color="#f7f7f7", width=2)))
     fig.write_image(filename, format='png', engine=engine)
 
 

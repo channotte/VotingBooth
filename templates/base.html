@@ -1,23 +1,20 @@
 <!doctype html>
 <html>
   <head>
+    <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet'>
     <style>
+
+    body {font-family: 'Poppins'}
+
     * {
          box-sizing: border-box;
       }
 
       .load {
-
-        width: 100%;
-        border: 1px solid black;
-        margin-left: 10px;
-        margin-right : 10px;
-
-        padding: 10px;
         color  : #00B0F0;
       }
       .load th, .load td {
-        border: 1px solid white;
+        border: 1px solid #3E3E3E;
 
         text-align: center;
         font-weight: bold;
@@ -32,16 +29,16 @@
         display:table;
         width:100%;
         table-layout:fixed;
-        border: 1px solid white;
+        border: 1px solid #3E3E3E;
         text-align:center
+
       }
 
       .table_cell{
         display:table-cell;
         width:100px;
         font-weight: bold;
-        font-size : 20px
-        border: 1px solid white;
+        font-size : 10px;
         text-align:center
       }
 
@@ -60,12 +57,19 @@
           display: table;
           clear: both;
           text-align: center;
+
       }
 
       .center {
-        display: block;
         margin-left: auto;
         margin-right: auto;
+        align-self: center;
+        flex-direction : row ;
+        justify-content: center;
+        display: flex;
+        align-content: center;
+        align-items : center;
+
 
       }
     </style>

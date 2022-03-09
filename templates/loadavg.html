@@ -16,21 +16,27 @@
     <div class="table_cell">{{ vote5 }}</div>
   </div>
 
+<div class="table">
+    <div class="table_cell"><img src="data:image/png;base64,{{ img_repartition.decode('utf-8', 'ignore') }}" width=100%></div>
+</div>
+
   <div class="table">
     <div class="table_cell"><img src="data:image/png;base64,{{ img_data.decode('utf-8', 'ignore') }}" width=100%></div>
-    <div class="table_cell"><img src="data:image/png;base64,{{ img_repartition.decode('utf-8', 'ignore') }}" width=100%></div>
-  </div>
+    <div class="table_cell">
+      <table class = "center" >
 
-  <div class="table">
-    <div class="table_cell">Nombre de frames </div>
-    <div class="table_cell">Taux d'utilisation </div>
-    <div class="table_cell">Dernière actualisation </div>
-  </div>
-
-  <div class="table">
-    <div class="table_cell">{{ nbframe }}</div>
-    <div class="table_cell">{{ tauxutil }} %</div>
-    <div class="table_cell">{{ refresh }} </div>
+        <tr >
+            <th style="text-align: center; " width=33%>Nombre de frames </th>
+            <th style="text-align: center; " width=33%>Taux d'utilisation  </th>
+            <th style="text-align: center; " width=33%>Dernière actualisation </th>
+        </tr>
+        <tr >
+          <td style="text-align: center; " width=33%>{{ nbframe }} </td>
+          <td style="text-align: center; " width=33%>{{ tauxutil }} % </td>
+          <td style="text-align: center; " width=33%>{{ refresh }} </td>
+       </tr>
+      </table>
+    </div>
   </div>
 
 </div>

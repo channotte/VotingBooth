@@ -10,8 +10,7 @@ import connexion_mongodb as mongof
 pd.options.plotting.backend = "plotly"
 import VotingBooth_functions as vbf  # for additional functions
 import hashlib  # for encrypting QR codes
-import base64
-import io
+import math
 # import matplotlib
 # matplotlib.use("Qt5Agg")
 # import multiprocessing
@@ -88,6 +87,10 @@ def ifnull(var, val):
     if var is None:
         return val
     return var
+
+def round_up(n, decimals=0):
+    multiplier = 10 ** decimals
+    return math.ceil(n * multiplier) / multiplier
 
 
 def gen_frames():  # generate frame by frame from camera
@@ -246,22 +249,22 @@ def video_feed():
 
 @app.context_processor
 def inject_load():
-    refresh = str(datetime.now(tz=None))
+    refresh = datetime.now(tz=None).strftime("%a %d %b %H:%M:%S")
     df_vote = mongof.make_request(collection_inauguration, request)
     df_votants = mongof.retrieve_votants(df_vote)
     number_frame = 0 if collection_inauguration.count_documents({}) is None else collection_inauguration.count_documents({})
     nb_gauche = collection_inauguration.count_documents({'hand': 'Gauche'})
     nb_droite = collection_inauguration.count_documents({'hand': 'Droite'})
-    taux_utilisation = str(0 if number_frame == 0 else round((nb_droite + nb_gauche) / number_frame, 4)*100)
+    taux_utilisation = str(0 if number_frame == 0 else round_up(100*(nb_droite + nb_gauche) / number_frame, 2))
 
     data = {"vote": df_votants.to_list(),
-            "value": ['Authenticité', "Ouverture", "Elégance", "Engagement", "Courage"],
+            "Valeurs": ['Authenticité', "Ouverture", "Elégance", "Engagement", "Courage"],
             'stack': [0, 0, 0, 0, 0]}
-    mongof.draw_horizontal_bar_plotly(pd.DataFrame(data), 'static/repartition.png', refresh)
+    mongof.draw_horizontal_bar_plotly(pd.DataFrame(data), filename='static/repartition.png', title="Répartition des votes")
     encoded_repartition = mongof.encode_image('static/repartition.png')
 
     mongof.draw_pie_plotly(pd.DataFrame(data=[nb_droite, nb_gauche], index=['Main Droite', 'Main Gauche'], columns=['valeur']),
-                              'static/test.png', refresh)
+                              filename='static/test.png', title="Main utilisée pour le vote")
     encoded_img_data = mongof.encode_image("static/test.png")
 
     return {'vote1': df_votants[0], 'vote2': df_votants[1], 'vote3': df_votants[2], 'vote4': df_votants[3],
