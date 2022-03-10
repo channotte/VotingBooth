@@ -187,12 +187,11 @@ def gen_frames():  # generate frame by frame from camera
                                             (25, 50),
                                             cv2.FONT_HERSHEY_SIMPLEX, 0.75, color_white, 2)
 
-                        # We find the hand
+
                         frame = detector.findHands(frame)
-                        lmList = detector.findPosition(frame, draw=False)
 
                         # We count the number of fingers showing on the video frame
-                        totalFingers = vbf.fingerCount(lmList, tipIds, hand)
+                        totalFingers = min(vbf.fingerCountBothHands(frame, tipIds, detector), 5)
 
                         NumFingers = str(totalFingers)
                         if NumFingers == 'None':

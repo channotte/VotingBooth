@@ -289,8 +289,8 @@ def main():
         # cv2.putText(img, str(int(fps)), (10, 70), cv2.FONT_HERSHEY_PLAIN, 3,
         #             (255, 0, 255), 3)
 
-        cv2.putText(img, "Nbr mains : " + str(int(nbrHand)), (10, 70), cv2.FONT_HERSHEY_PLAIN, 3,
-                    (0, 255, 255), 3)
+        # cv2.putText(img, "Nbr mains : " + str(int(nbrHand)), (10, 70), cv2.FONT_HERSHEY_PLAIN, 3,
+        #             (0, 255, 255), 3)
 
         cv2.putText(img, "Nbr doigts : " + str(int(nbrFingers)), (100, 70), cv2.FONT_HERSHEY_PLAIN, 3,
                     (0, 255, 255), 3)
