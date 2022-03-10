@@ -258,14 +258,13 @@ def inject_load():
     taux_utilisation = str(0 if number_frame == 0 else round_up(100*(nb_droite + nb_gauche) / number_frame, 2))
     str_nbframe = format(number_frame, ',d').replace(',', ' ')
 
-    data = {"vote": df_votants.to_list(),
-            "Valeurs": ['Authenticité', "Ouverture", "Elégance", "Engagement", "Courage"],
-            'stack': [0, 0, 0, 0, 0]}
-    mongof.draw_horizontal_bar_plotly(pd.DataFrame(data), filename='static/repartition.png', title="Répartition des votes")
+    data = {"vote": df_votants.to_list(), "Valeurs": ['Authenticité', "Ouverture", "Elégance", "Engagement", "Courage"]}
+    data_main = {"vote": [nb_gauche, nb_droite], "Valeurs": ['Main Gauche', "Main Droite"], 'stack': [0, 0]}
+
+    mongof.draw_horizontal_bar_plotly_opt2(pd.DataFrame(data), filename='static/repartition.png', title="Répartition des votes")
     encoded_repartition = mongof.encode_image('static/repartition.png')
 
-    mongof.draw_pie_plotly(pd.DataFrame(data=[nb_droite, nb_gauche], index=['Main Droite', 'Main Gauche'], columns=['valeur']),
-                              filename='static/test.png', title="Main utilisée pour le vote")
+    mongof.draw_bar_hands(pd.DataFrame(data_main), filename='static/test.png', title="Main utilisée pour le vote")
     encoded_img_data = mongof.encode_image("static/test.png")
 
     return {'vote1': df_votants[0], 'vote2': df_votants[1], 'vote3': df_votants[2], 'vote4': df_votants[3],

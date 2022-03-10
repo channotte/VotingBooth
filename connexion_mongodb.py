@@ -63,6 +63,7 @@ def retrieve_votants(df_vote):
 def draw_pie_plotly(dataframe, filename, title, engine="kaleido"):
     fig = px.pie(dataframe, values='valeur', names=dataframe.index, title=str(title),
                  color_discrete_sequence=px.colors.qualitative.Pastel, hole=0.3)
+
     fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color="#f7f7f7")
     fig.update_layout(showlegend=False)
     fig.update_traces(textposition='inside', textinfo='percent+label', marker=dict(line=dict(color="#f7f7f7", width=3)),
@@ -73,10 +74,29 @@ def draw_pie_plotly(dataframe, filename, title, engine="kaleido"):
     fig.write_image(filename, format='png', engine=engine)
 
 
+def draw_bar_hands(dataframe, filename, title, engine="kaleido"):
+    fig = px.bar(dataframe, x="vote", y="stack", title=title, text_auto=True, barmode='relative',
+                 orientation="h", labels={},
+                 color="Valeurs", color_discrete_sequence=px.colors.qualitative.Pastel, height=220, width=1000)
+    # fig.update_xaxes(visible=False)
+    fig.update_yaxes(visible=False)
+    fig.update_layout(xaxis={"ticksuffix": "%"})
+    fig.update_xaxes(tickformat='.1f')
+    fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=1, xanchor="center", x=0.5),
+                      uniformtext_minsize=10, uniformtext_mode='hide')
+    fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color="#f7f7f7",
+                      barnorm="percent")
+    fig.update_traces(textposition='inside', marker=dict(line=dict(color="#f7f7f7", width=2)), textfont_size=20)
+    fig.update_layout(xaxis_title=None, legend_font_size=20, title_font_size=25, legend_title="")
+
+    fig.write_image(filename, format='png', engine=engine)
+
+
 def draw_horizontal_bar_plotly(dataframe, filename, title, engine="kaleido"):
     fig = px.bar(dataframe, x="vote", y="stack", title=str(title), text_auto=True, barmode='relative',
                  orientation="h", labels={},
                  color="Valeurs", color_discrete_sequence=px.colors.qualitative.Pastel, height=220, width=1400)
+
     fig.update_yaxes(visible=False)
     fig.update_layout(xaxis={"ticksuffix": "%"}, xaxis_title=None)
     fig.update_xaxes(tickformat='.1f')
@@ -86,8 +106,22 @@ def draw_horizontal_bar_plotly(dataframe, filename, title, engine="kaleido"):
                       barnorm="percent")
     fig.update_traces(textposition='inside', marker=dict(line=dict(color="#f7f7f7", width=2)), textfont_size=20)
     fig.update_layout(xaxis_title=None, legend_font_size=25, title_font_size=25, legend_title="")
+
     fig.write_image(filename, format='png', engine=engine)
 
+
+def draw_horizontal_bar_plotly_opt2(dataframe, filename, title, engine="kaleido") :
+    fig = px.bar(dataframe, x="Valeurs", y="vote", title=title, text_auto=True, barmode='relative', labels={},
+                 color="Valeurs", color_discrete_sequence=px.colors.qualitative.Pastel, height=500, width=1000)
+    fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=1, xanchor="center", x=0.5),
+                      uniformtext_minsize=10, uniformtext_mode='hide', font_color="#f7f7f7")
+    fig.update_xaxes(showgrid=False)
+    fig.update_yaxes(showgrid=False)
+    fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', bargap=0.5)
+    fig.update_traces(textposition='inside', marker=dict(line=dict(color="#f7f7f7", width=3)), textfont_size=20)
+    fig.update_layout(xaxis_title=None, yaxis_title="Nombre de votes", legend_font_size=17, title_font_size=25,
+                      legend_title="")
+    fig.write_image(filename, format='png', engine=engine)
 
 def encode_image(filename):
     im = Image.open(filename)
