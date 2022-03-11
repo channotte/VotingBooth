@@ -1,3 +1,4 @@
 /stats.csv
 /data.csv
 /static/my-app/*
+__pycache__/*
