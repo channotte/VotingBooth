@@ -117,7 +117,7 @@ def draw_horizontal_bar_plotly_opt2(dataframe, filename, title, engine="kaleido"
                  color="Valeurs", color_discrete_sequence=px.colors.qualitative.Pastel, height=500, width=1000)
     fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=1, xanchor="center", x=0.5), font_color="#f7f7f7")
     fig.update_xaxes(showgrid=False)
-    fig.update_yaxes(showgrid=False, range=[0, max(dataframe['vote'])])
+    fig.update_yaxes(showgrid=False, range=[0, max(dataframe['vote'])+5])
     fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', bargap=0.5)
     fig.update_traces(textposition='inside', marker=dict(line=dict(color="#f7f7f7", width=3)), textfont_size=20)
     fig.update_layout(xaxis_title=None, yaxis_title="Nombre de votes", legend_font_size=17, title_font_size=25,
