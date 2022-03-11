@@ -13,7 +13,7 @@ import hashlib  # for encrypting QR codes
 import math
 # import matplotlib
 # matplotlib.use("Qt5Agg")
-# import multiprocessing
+import multiprocessing
 import time
 from datetime import datetime
 im = Image.open("static/merci.jpg")
@@ -28,12 +28,16 @@ detector = vbf.handDetector(detectionCon=0.75)
 # figure 2.21 in https://google.github.io/mediapipe/solutions/hands.html
 tipIds = [4, 8, 12, 16, 20]
 
-# We get the video capture running
-camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
-camera.set(3, 1024)  # 3 = width
-camera.set(4, 768)  # 4 = height
+# camera = cv2.VideoCapture()
+# # The device number might be 0 or 1 depending on the device and the webcam
+# camera.open(0, cv2.CAP_DSHOW)
 
-global collection_inauguration, request
+# We get the video capture running
+# camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+# camera.set(3, 1024)  # 3 = width
+# camera.set(4, 768)  # 4 = height
+
+# global collection_inauguration, request
 
 collection_inauguration = mongof.connect_db()
 # request = [{'$group': {'_id': '$Hash', 'Vote1': {'$sum': {'$cond': [{'$eq': ['$Vote', '1']}, 1, 0]}},
@@ -53,7 +57,7 @@ request = [{'$group': {'_id': '$Hash', 'Vote1': {'$sum': {'$cond': [{'$eq': ['$V
                              '$cond': [{'$eq': ['$Votemax', '$Vote4']}, 'Vote4',
                                        {'$cond': [{'$eq': ['$Votemax', '$Vote5']}, 'Vote5', 'Vote0']}]}]}]}]}}}]
 
-global capture, rec_frame, grey, switch, neg, face, rec, out
+# global capture, rec_frame, grey, switch, neg, face, rec, out
 capture = 0
 grey = 0
 neg = 0
@@ -94,10 +98,20 @@ def round_up(n, decimals=0):
 
 
 def gen_frames():  # generate frame by frame from camera
-    global out, capture, rec_frame
+    # global out, capture, rec_frame
+    camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+
+    # The device number might be 0 or 1 depending on the device and the webcam
+    camera.set(3, 1024)  # 3 = width
+    camera.set(4, 768)  # 4 = height
+
     while True:
+
         success, frame = camera.read()
         frame = cv2.flip(frame, 1)
+        # cv2.imshow('frame', frame)
+        # if cv2.waitKey(1) & 0xFF == ord('q'):
+        #     break
 
         if success:
 
@@ -116,6 +130,7 @@ def gen_frames():  # generate frame by frame from camera
                 NumFingers = str(totalFingers)
                 if NumFingers == 'None':
                     NumFingers = '0'
+
 
                 cv2.putText(frame, NumFingers, (51, 121), cv2.FONT_HERSHEY_SIMPLEX, 2, color_black, 5)
                 cv2.putText(frame, NumFingers, (50, 120), cv2.FONT_HERSHEY_SIMPLEX, 2, color_white, 5)
@@ -219,12 +234,15 @@ def gen_frames():  # generate frame by frame from camera
                                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
                 # We show the frames (non-voting process)
+
                 ret, buffer = cv2.imencode('.jpg', frame)
                 frame = buffer.tobytes()
                 yield (b'--frame\r\n'
                        b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
             except Exception as e:
+                print(e)
                 pass
+
         else:
             pass
 
@@ -232,8 +250,13 @@ def gen_frames():  # generate frame by frame from camera
 def update_load():
     with app.app_context():
         while True:
-            time.sleep(10)
-            turbo.push(turbo.replace(render_template('loadavg.html'), 'load'))
+            try:
+                time.sleep(20)
+                turbo.push(turbo.replace(render_template('loadavg.html'), 'load'))
+            except KeyboardInterrupt:
+                print("User aborted.")
+                break
+
 
 
 @app.route('/')
@@ -274,7 +297,11 @@ def inject_load():
 @app.before_first_request
 def before_first_request():
     threading.Thread(target=update_load).start()
+    # th.daemon = True
+    # th.start()
+
     # multiprocessing.Process(target=update_load, args=()).start()
 
+
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)

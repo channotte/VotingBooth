@@ -88,8 +88,13 @@ def draw_bar_hands(dataframe, filename, title, engine="kaleido"):
                       barnorm="percent")
     fig.update_traces(textposition='inside', marker=dict(line=dict(color="#f7f7f7", width=2)), textfont_size=20)
     fig.update_layout(xaxis_title=None, legend_font_size=20, title_font_size=25, legend_title="")
-
-    fig.write_image(filename, format='png', engine=engine)
+    print("avant save")
+    try :
+        print("dans try")
+        fig.write_image(filename, format='png', engine="orca")
+        print("fin try")
+    except :
+        raise
 
 
 def draw_horizontal_bar_plotly(dataframe, filename, title, engine="kaleido"):
@@ -121,7 +126,7 @@ def draw_horizontal_bar_plotly_opt2(dataframe, filename, title, engine="kaleido"
     fig.update_traces(textposition='inside', marker=dict(line=dict(color="#f7f7f7", width=3)), textfont_size=20)
     fig.update_layout(xaxis_title=None, yaxis_title="Nombre de votes", legend_font_size=17, title_font_size=25,
                       legend_title="")
-    fig.write_image(filename, format='png', engine=engine)
+    fig.write_image(filename, format='png', engine="orca")
 
 def encode_image(filename):
     im = Image.open(filename)

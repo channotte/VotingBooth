@@ -125,4 +125,4 @@ dependencies:
     - simple-websocket==0.5.1
     - turbo-flask==0.8.0
     - wsproto==1.1.0
-prefix: C:\Users\c.hannotte\Anaconda3\envs\VotingBooth
+prefix: C:\Users\Salon\Anaconda3\envs\VotingBooth
