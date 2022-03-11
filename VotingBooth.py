@@ -251,7 +251,8 @@ def inject_load():
     refresh = datetime.now(tz=None).strftime("%a %d %b %H:%M:%S")
     df_vote = mongof.make_request(collection_inauguration, request)
     df_votants = mongof.retrieve_votants(df_vote)
-    number_frame = 0 if collection_inauguration.count_documents({}) is None else collection_inauguration.count_documents({})
+
+    number_frame = collection_inauguration.count_documents({})
     nb_gauche = collection_inauguration.count_documents({'hand': 'Gauche'})
     nb_droite = collection_inauguration.count_documents({'hand': 'Droite'})
     taux_utilisation = str(0 if number_frame == 0 else round_up(100*(nb_droite + nb_gauche) / number_frame, 2))

@@ -6,6 +6,7 @@ import pandas as pd
 # import matplotlib.pyplot as plt
 # from matplotlib.figure import Figure
 from PIL import Image
+import numpy as np
 import io
 
 pd.options.plotting.backend = "plotly"
@@ -44,11 +45,12 @@ def make_request(collection, request):
 
 
 def retrieve_votants(df_vote):
-    df_counts = []
+    df_counts = pd.DataFrame(0, index=np.arange(0,5), columns=np.arange(1))[0]
     try:
         df_votants = df_vote[~df_vote["_id"].str.contains("NoVote")]
         df_counts = df_votants['VoteValue'].value_counts().sort_index()
     finally:
+
         return df_counts
 
 
@@ -113,10 +115,9 @@ def draw_horizontal_bar_plotly(dataframe, filename, title, engine="kaleido"):
 def draw_horizontal_bar_plotly_opt2(dataframe, filename, title, engine="kaleido") :
     fig = px.bar(dataframe, x="Valeurs", y="vote", title=title, text_auto=True, barmode='relative', labels={},
                  color="Valeurs", color_discrete_sequence=px.colors.qualitative.Pastel, height=500, width=1000)
-    fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=1, xanchor="center", x=0.5),
-                      uniformtext_minsize=10, uniformtext_mode='hide', font_color="#f7f7f7")
+    fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=1, xanchor="center", x=0.5), font_color="#f7f7f7")
     fig.update_xaxes(showgrid=False)
-    fig.update_yaxes(showgrid=False)
+    fig.update_yaxes(showgrid=False, range=[0, max(dataframe['vote'])])
     fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', bargap=0.5)
     fig.update_traces(textposition='inside', marker=dict(line=dict(color="#f7f7f7", width=3)), textfont_size=20)
     fig.update_layout(xaxis_title=None, yaxis_title="Nombre de votes", legend_font_size=17, title_font_size=25,
