@@ -113,12 +113,12 @@ def gen_frames():  # generate frame by frame from camera
 
                 top, bottom, left, right = [5] * 4
                 frame = cv2.copyMakeBorder(frame, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color)
-
-                frame = cv2.putText(frame, 'Vote non pris en compte, montrez vos 10 doigts pour commencer', (26, 51),
-                                    cv2.FONT_HERSHEY_SIMPLEX, 0.75, color_black, 2)
-
-                frame = cv2.putText(frame, 'Vote non pris en compte, montrez vos 10 doigts pour commencer', (25, 50),
-                                    cv2.FONT_HERSHEY_SIMPLEX, 0.75, color_white, 2)
+                #
+                # frame = cv2.putText(frame, 'Vote non pris en compte, montrez vos 10 doigts pour commencer', (26, 51),
+                #                     cv2.FONT_HERSHEY_SIMPLEX, 0.75, color_black, 2)
+                #
+                # frame = cv2.putText(frame, 'Vote non pris en compte, montrez vos 10 doigts pour commencer', (25, 50),
+                #                     cv2.FONT_HERSHEY_SIMPLEX, 0.75, color_white, 2)
 
                 mongof.write_db(collection_inauguration, totalFingers, hand)
 
@@ -228,7 +228,7 @@ def update_load():
         while True:
             try:
 
-                turbo.push(turbo.replace(render_template('loadavg.html'), 'load'))
+                turbo.push(turbo.replace(render_template('loadavg.html'), 'load_vertical'))
                 time.sleep(10)
 
             except KeyboardInterrupt:
@@ -239,7 +239,7 @@ def update_load():
 
 @app.route('/')
 def index():
-    return render_template('index_qcm.html')
+    return render_template('index.html')
 
 
 @app.route('/video_feed')
@@ -261,7 +261,7 @@ def inject_load():
     data = {"vote": df_votants.to_list(), "Valeurs": ['Authenticité', "Ouverture", "Elégance", "Engagement", "Courage"]}
     data_main = {"vote": [nb_gauche, nb_droite], "Valeurs": ['Main Gauche', "Main Droite"], 'stack': [0, 0]}
 
-    plotfig.draw_horizontal_bar_plotly_opt2(pd.DataFrame(data), filename='static/repartition.png', title="Répartition des votes")
+    plotfig.draw_horizontal_bar_plotly_opt2(pd.DataFrame(data), filename='static/repartition.png', title="")
     encoded_repartition = plotfig.encode_image('static/repartition.png')
 
     plotfig.draw_bar_hands(pd.DataFrame(data_main), filename='static/barhands.png', title="Main utilisée pour le vote")

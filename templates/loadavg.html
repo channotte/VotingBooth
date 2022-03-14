@@ -1,4 +1,4 @@
-<div id="load" class="load">
+<!--<div id="load" class="load">
 
   <div class="table">
     <div class="table_cell"><img src="{{ url_for('static', filename='Authenticite.png') }} " width=100%></div>
@@ -42,4 +42,31 @@
 
 
 
-</div>
+</div>-->
+
+<div id="load_vertical" class="load_vertical">
+			<table class="center" width="90%"  style="margin-left: auto;margin-right: auto;">
+				<tr>
+					<td style="text-align: center; vertical-align: middle;"><img src="data:image/png;base64,{{ img_repartition.decode('utf-8', 'ignore') }}" width="85%"></td>
+				</tr>
+
+				<tr>
+					<td style="text-align: center; vertical-align: middle;"><img src="data:image/png;base64,{{ img_data.decode('utf-8', 'ignore') }}" width="90%"><br></td>
+				</tr>
+				<tr>
+			</table>
+			<table align="center" style="font-size : 20px; color: white; border: 2px solid white;">
+				<tbody>
+				<tr>
+					<td style="text-align: center; " width="33%">Nombre de frames </td>
+					<td style="text-align: center; " width="33%">Taux d'utilisation  </td>
+					<td style="text-align: center; " width="33%">Dernière actualisation </td>
+				</tr>
+				<tr>
+					<td style="text-align: center; " width="33%">{{ nbframe}} </td>
+					<td style="text-align: center; " width="33%">{{ tauxutil }} % </td>
+					<td style="text-align: center; " width="33%">{{ refresh }} </td>
+				</tr>
+				</tbody>
+			</table>
+		</div>

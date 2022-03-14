@@ -3,108 +3,16 @@
   <head>
 
     <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet'>
-    <style>
-
-    body {font-family: 'Poppins'}
-
-    * {
-         box-sizing: border-box;
-      }
-
-      .load {
-        color  : #00B0F0;
-      }
-      .load th, .load td {
-        border: 1px solid #3E3E3E;
-
-        text-align: center;
-        font-weight: bold;
-        font-size : 20px
-
-        margin: 5px 5px 5px 5px 5px;
-        padding: 5px 5px 5px 5px 5px;
-
-      }
-
-      .table {
-        display:table;
-        width:100%;
-        table-layout:fixed;
-        text-align:center;
-        padding: 5px;
-
-      }
-
-      .table_cell{
-        display:table-cell;
-        width:100px;
-        font-weight: bold;
-        font-size : 17px;
-        text-align:center
-      }
-
-      .column {
-        float: left;
-        width: 50%;
-        padding: 10px;
-        height: 90%;
-       }
-
-
-       .row {}
-
-       .align-items-stretch {
-          display:flex;
-          align-items: stretch;
-       }
-
-       .vertical-align-center {
-          display: flex; height: auto; align-items:center
-       }
-       .row:after {
-          content: "";
-          display: table;
-          clear: both;
-          text-align: center;
-
-      }
-
-      .center {
-        margin-left: auto;
-        margin-right: auto;
-        align-self: center;
-        flex-direction : row ;
-        justify-content: center;
-        display: flex;
-        align-content: center;
-        align-items : center;
-
-     }
-    </style>
-
+    <link rel='stylesheet' type='text/css' href='satisfaction.css'>
     {{ turbo() }}
   </head>
-  <body style="background-color:#272727">
-  <div class="row">
-    	<img src="{{ url_for('static', filename='question_satisfaction_black_3.png') }} "  class="center"  width=40%><br>
+  <body>
 
-  <div class="column">
 	  {% block content %}
       {% endblock %}
-  </div>
-    <div class="vl" style="
-    border-left: 2px solid #3E3E3E;
-    height: 70%;
-    position: absolute;
-    left: 50%;
-    margin-top: 75px;">
-
-    </div>
-  <div class="column">
-    <h3 style = "color  : white; text-align:center"> Résultats des votes</h3>
+      <h3 style="color  : #FFFFFF;"> Résultats des votes </h3>
     {% include "loadavg.html" %}
 
-  </div>
-  </div>
+
   </body>
 </html>
