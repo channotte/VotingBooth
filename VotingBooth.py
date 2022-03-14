@@ -125,22 +125,26 @@ def gen_frames():  # generate frame by frame from camera
                 identite_recupere = False
 
                 if nbHands == 2 and totalFingers == 10:
+                    try :
+                        seuil_nbr_frame = 50
+                        ordre_main = detector.findindexesHands(frame)
+                        identity = vbf.indentifyHands(frame, tipIds, detector.findPositionMultiHand(frame))
 
-                    seuil_nbr_frame = 150
-                    ordre_main = detector.findindexesHands(frame)
-                    identity = vbf.indentifyHands(frame, tipIds, detector.findPositionMultiHand(frame))
+                        liste_code_main = []
+                        code_main = vbf.code_hand(identity, ordre_main)
 
-                    liste_code_main = []
-                    code_main = vbf.code_hand(identity, ordre_main)
+                        while len(liste_code_main) < seuil_nbr_frame:
+                            if len(code_main) == 10:
+                                code_main = vbf.code_hand(identity, ordre_main)
+                                liste_code_main.append(code_main)
 
-                    while len(liste_code_main) < seuil_nbr_frame:
-                        if len(code_main) == 10:
-                            code_main = vbf.code_hand(identity, ordre_main)
-                            liste_code_main.append(code_main)
+                        mean_code_main = vbf.aggregate_dicts(liste_code_main, operation=vbf.mean_no_none)
+                        print(mean_code_main)
+                        identite_recupere = True
 
-                    mean_code_main = vbf.aggregate_dicts(liste_code_main, operation=vbf.mean_no_none)
-                    print(mean_code_main)
-                    identite_recupere = True
+                    except Exception as e :
+                        print(e)
+                        pass
 
                 if identite_recupere:
 
@@ -180,9 +184,10 @@ def gen_frames():  # generate frame by frame from camera
 
 
                         frame = detector.findHands(frame)
-
+                        lmList = detector.findPosition(frame, draw=False)
+                        totalFingers = vbf.fingerCount(lmList, tipIds, hand)
                         # We count the number of fingers showing on the video frame
-                        totalFingers = min(vbf.fingerCountBothHands(frame, tipIds, detector), 5)
+                        # totalFingers = min(vbf.fingerCountBothHands(frame, tipIds, detector), 5)
 
                         NumFingers = str(totalFingers)
                         if NumFingers == 'None':
@@ -222,8 +227,10 @@ def update_load():
     with app.app_context():
         while True:
             try:
-                time.sleep(20)
+
                 turbo.push(turbo.replace(render_template('loadavg.html'), 'load'))
+                time.sleep(10)
+
             except KeyboardInterrupt:
                 print("User aborted.")
                 break
