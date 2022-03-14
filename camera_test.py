@@ -40,10 +40,5 @@ fig = go.Figure(
 #                   barnorm="percent")
 # fig.update_traces(textposition='inside', marker=dict(line=dict(color="#f7f7f7", width=2)), textfont_size=20)
 # fig.update_layout(xaxis_title=None, legend_font_size=20, title_font_size=25, legend_title="")
-print("avant save")
-try :
-    print("dans try")
-    fig.write_image(filename, format='png', engine="orca")
-    print("fin try")
-except :
-    raise
+
+fig.write_image(filename, format='png', engine="orca")

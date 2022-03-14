@@ -1,50 +1,29 @@
 import threading
-
 import pandas as pd
 from flask import Flask, render_template, Response, request
 import cv2
 import os, sys
-from PIL import Image
 from turbo_flask import Turbo
 import connexion_mongodb as mongof
-pd.options.plotting.backend = "plotly"
 import VotingBooth_functions as vbf  # for additional functions
+import plotly_figures as plotfig
 import hashlib  # for encrypting QR codes
 import math
-# import matplotlib
-# matplotlib.use("Qt5Agg")
-import multiprocessing
+# import multiprocessing
 import time
 from datetime import datetime
-im = Image.open("static/merci.jpg")
-
-# We store all results in a file on the local system
-# file = open('data.csv', 'a+')
+pd.options.plotting.backend = "plotly"
 
 # We set parameters for hand detector
-detector = vbf.handDetector(detectionCon=0.75)
+detector = vbf.handDetector(detectionCon=0.8)
 
 # For the tipIds, we take the tip of each finger
 # figure 2.21 in https://google.github.io/mediapipe/solutions/hands.html
 tipIds = [4, 8, 12, 16, 20]
 
-# camera = cv2.VideoCapture()
-# # The device number might be 0 or 1 depending on the device and the webcam
-# camera.open(0, cv2.CAP_DSHOW)
-
-# We get the video capture running
-# camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
-# camera.set(3, 1024)  # 3 = width
-# camera.set(4, 768)  # 4 = height
-
-# global collection_inauguration, request
 
 collection_inauguration = mongof.connect_db()
-# request = [{'$group': {'_id': '$Hash', 'Vote1': {'$sum': {'$cond': [{'$eq': ['$Vote', '1']}, 1, 0]}},
-#                        'Vote2': {'$sum': {'$cond': [{'$eq': ['$Vote', '2']}, 1, 0]}},
-#                        'Vote3': {'$sum': {'$cond': [{'$eq': ['$Vote', '3']}, 1, 0]}},
-#                        'Vote4': {'$sum': {'$cond': [{'$eq': ['$Vote', '4']}, 1, 0]}},
-#                        'Vote5': {'$sum': {'$cond': [{'$eq': ['$Vote', '5']}, 1, 0]}}}}]
+
 request = [{'$group': {'_id': '$Hash', 'Vote1': {'$sum': {'$cond': [{'$eq': ['$Vote', '1']}, 1, 0]}},
                        'Vote2': {'$sum': {'$cond': [{'$eq': ['$Vote', '2']}, 1, 0]}},
                        'Vote3': {'$sum': {'$cond': [{'$eq': ['$Vote', '3']}, 1, 0]}},
@@ -109,9 +88,6 @@ def gen_frames():  # generate frame by frame from camera
 
         success, frame = camera.read()
         frame = cv2.flip(frame, 1)
-        # cv2.imshow('frame', frame)
-        # if cv2.waitKey(1) & 0xFF == ord('q'):
-        #     break
 
         if success:
 
@@ -218,27 +194,22 @@ def gen_frames():  # generate frame by frame from camera
                         mongof.write_db(collection_inauguration, totalFingers, hand, hashed_code_main.hexdigest())
 
                         # We show the frames (voting process)
+
                         ret, buffer = cv2.imencode('.jpg', frame)
                         frame = buffer.tobytes()
                         yield (b'--frame\r\n'
                                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
-                    # We set a 10 seconds timer to vote
-                    t_end_thanks = time.time() + 5
-
-                    while time.time() < t_end_thanks:
-                        frame = im
-                        ret, buffer = cv2.imencode('.jpg', frame)
-                        frame = buffer.tobytes()
-                        yield (b'--frame\r\n'
-                               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
                 # We show the frames (non-voting process)
 
-                ret, buffer = cv2.imencode('.jpg', frame)
-                frame = buffer.tobytes()
+                if not isinstance(frame, bytes):
+                    ret, buffer = cv2.imencode('.jpg', frame)
+                    frame = buffer.tobytes()
+
                 yield (b'--frame\r\n'
                        b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
             except Exception as e:
                 print(e)
                 pass
@@ -283,11 +254,11 @@ def inject_load():
     data = {"vote": df_votants.to_list(), "Valeurs": ['Authenticité', "Ouverture", "Elégance", "Engagement", "Courage"]}
     data_main = {"vote": [nb_gauche, nb_droite], "Valeurs": ['Main Gauche', "Main Droite"], 'stack': [0, 0]}
 
-    mongof.draw_horizontal_bar_plotly_opt2(pd.DataFrame(data), filename='static/repartition.png', title="Répartition des votes")
-    encoded_repartition = mongof.encode_image('static/repartition.png')
+    plotfig.draw_horizontal_bar_plotly_opt2(pd.DataFrame(data), filename='static/repartition.png', title="Répartition des votes")
+    encoded_repartition = plotfig.encode_image('static/repartition.png')
 
-    mongof.draw_bar_hands(pd.DataFrame(data_main), filename='static/test.png', title="Main utilisée pour le vote")
-    encoded_img_data = mongof.encode_image("static/test.png")
+    plotfig.draw_bar_hands(pd.DataFrame(data_main), filename='static/barhands.png', title="Main utilisée pour le vote")
+    encoded_img_data = plotfig.encode_image("static/barhands.png")
 
     return {'vote1': df_votants[0], 'vote2': df_votants[1], 'vote3': df_votants[2], 'vote4': df_votants[3],
             'vote5': df_votants[4], 'nbframe': str_nbframe, 'tauxutil': taux_utilisation, 'img_data' : encoded_img_data,
@@ -297,8 +268,6 @@ def inject_load():
 @app.before_first_request
 def before_first_request():
     threading.Thread(target=update_load).start()
-    # th.daemon = True
-    # th.start()
 
     # multiprocessing.Process(target=update_load, args=()).start()
 
