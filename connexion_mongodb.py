@@ -1,17 +1,7 @@
 import datetime, time
 from pymongo import MongoClient
 import pandas as pd
-# import matplotlib
-# matplotlib.use("Qt5Agg")
-# import matplotlib.pyplot as plt
-# from matplotlib.figure import Figure
-from PIL import Image
-import io
-
-pd.options.plotting.backend = "plotly"
-import plotly
-import plotly.express as px
-import base64
+import numpy as np
 
 
 def connect_db(server='localhost', port_number=27017):
@@ -44,10 +34,11 @@ def make_request(collection, request):
 
 
 def retrieve_votants(df_vote):
-    df_counts = []
+    df_counts = pd.DataFrame(0, index=['Vote1','Vote2','Vote3','Vote4','Vote5'], columns=np.arange(1))[0]
     try:
         df_votants = df_vote[~df_vote["_id"].str.contains("NoVote")]
-        df_counts = df_votants['VoteValue'].value_counts().sort_index()
+        df_base = df_votants['VoteValue'].value_counts().sort_index()
+        df_counts[df_base.index] = df_base
     finally:
         return df_counts
 

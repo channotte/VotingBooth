@@ -65,7 +65,7 @@ def draw_horizontal_bar_plotly(dataframe, filename, title, engine="kaleido"):
 def draw_horizontal_bar_plotly_opt2(dataframe, filename, title, engine="kaleido"):
     try:
         fig = px.bar(dataframe, x="Valeurs", y="vote", title=title, text_auto=True, barmode='relative', labels={},
-                     color="Valeurs", color_discrete_sequence=px.colors.qualitative.Pastel, height=500, width=1000)
+                     color="Valeurs", color_discrete_sequence=px.colors.qualitative.Pastel, height=500, width=1200)
         fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=1, xanchor="center", x=0.5),
                           uniformtext_minsize=10, uniformtext_mode='hide', font_color="#f7f7f7")
         fig.update_xaxes(showgrid=False)

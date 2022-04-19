@@ -3,14 +3,15 @@
   <head>
 
     <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet'>
-    <link rel='stylesheet' type='text/css' href='satisfaction.css'>
+
     {{ turbo() }}
   </head>
   <body>
 
     {% block content %}
       {% endblock %}
-      <h2 style="color  : #FFFFFF; text-align:center"> Résultats des votes </h3>
+    <br>
+      <h2 style="color  : #FFFFFF; text-align:center"> Résultats des votes </h2>
     {% include "loadavg.html" %}
 
 

@@ -12,6 +12,7 @@ import math
 # import multiprocessing
 import time
 from datetime import datetime
+
 pd.options.plotting.backend = "plotly"
 
 # We set parameters for hand detector
@@ -20,7 +21,6 @@ detector = vbf.handDetector(detectionCon=0.8)
 # For the tipIds, we take the tip of each finger
 # figure 2.21 in https://google.github.io/mediapipe/solutions/hands.html
 tipIds = [4, 8, 12, 16, 20]
-
 
 collection_inauguration = mongof.connect_db()
 
@@ -37,12 +37,12 @@ request = [{'$group': {'_id': '$Hash', 'Vote1': {'$sum': {'$cond': [{'$eq': ['$V
                                        {'$cond': [{'$eq': ['$Votemax', '$Vote5']}, 'Vote5', 'Vote0']}]}]}]}]}}}]
 
 # global capture, rec_frame, grey, switch, neg, face, rec, out
-capture = 0
-grey = 0
-neg = 0
-face = 0
-switch = 1
-rec = 0
+# capture = 0
+# grey = 0
+# neg = 0
+# face = 0
+# switch = 1
+# rec = 0
 
 # make shots directory to save pics
 try:
@@ -55,21 +55,23 @@ app = Flask(__name__, template_folder='./templates')
 turbo = Turbo(app)
 app.config['SERVER_NAME'] = "127.0.0.1:5000"
 
-def record(out):
-    global rec_frame
-    while (rec):
-        time.sleep(0.05)
-        out.write(rec_frame)
+#
+# def record(out):
+#     global rec_frame
+#     while (rec):
+#         time.sleep(0.05)
+#         out.write(rec_frame)
 
-
-def detect_face(frame):
-    return frame
+#
+# def detect_face(frame):
+#     return frame
 
 
 def ifnull(var, val):
     if var is None:
         return val
     return var
+
 
 def round_up(n, decimals=0):
     multiplier = 10 ** decimals
@@ -107,9 +109,8 @@ def gen_frames():  # generate frame by frame from camera
                 if NumFingers == 'None':
                     NumFingers = '0'
 
-
-                cv2.putText(frame, NumFingers, (51, 121), cv2.FONT_HERSHEY_SIMPLEX, 2, color_black, 5)
-                cv2.putText(frame, NumFingers, (50, 120), cv2.FONT_HERSHEY_SIMPLEX, 2, color_white, 5)
+                cv2.putText(frame, NumFingers, (26, 71), cv2.FONT_HERSHEY_SIMPLEX, 2, color_black, 5)
+                cv2.putText(frame, NumFingers, (25, 70), cv2.FONT_HERSHEY_SIMPLEX, 2, color_white, 5)
 
                 top, bottom, left, right = [5] * 4
                 frame = cv2.copyMakeBorder(frame, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color)
@@ -125,30 +126,30 @@ def gen_frames():  # generate frame by frame from camera
                 identite_recupere = False
 
                 if nbHands == 2 and totalFingers == 10:
-                    try :
-                        seuil_nbr_frame = 50
+                    try:
+                        # seuil_nbr_frame = 20
                         ordre_main = detector.findindexesHands(frame)
                         identity = vbf.indentifyHands(frame, tipIds, detector.findPositionMultiHand(frame))
 
                         liste_code_main = []
                         code_main = vbf.code_hand(identity, ordre_main)
 
-                        while len(liste_code_main) < seuil_nbr_frame:
-                            if len(code_main) == 10:
-                                code_main = vbf.code_hand(identity, ordre_main)
-                                liste_code_main.append(code_main)
+                        # while len(liste_code_main) < seuil_nbr_frame:
+                        #     if len(code_main) == 10:
+                        #         code_main = vbf.code_hand(identity, ordre_main)
+                        #         liste_code_main.append(code_main)
+                        #
+                        # mean_code_main = vbf.aggregate_dicts(liste_code_main, operation=vbf.mean_no_none)
 
-                        mean_code_main = vbf.aggregate_dicts(liste_code_main, operation=vbf.mean_no_none)
-                        print(mean_code_main)
                         identite_recupere = True
 
-                    except Exception as e :
+                    except Exception as e:
                         print(e)
                         pass
 
                 if identite_recupere:
 
-                    hashed_code_main = hashlib.sha256(str(mean_code_main).encode())
+                    hashed_code_main = hashlib.sha256(str(code_main).encode())
                     print(f"Identité des mains : {hashed_code_main} récupérée")
 
                     # We set a 10 seconds timer to vote
@@ -182,7 +183,6 @@ def gen_frames():  # generate frame by frame from camera
                                             (25, 50),
                                             cv2.FONT_HERSHEY_SIMPLEX, 0.75, color_white, 2)
 
-
                         frame = detector.findHands(frame)
                         lmList = detector.findPosition(frame, draw=False)
                         totalFingers = vbf.fingerCount(lmList, tipIds, hand)
@@ -204,7 +204,6 @@ def gen_frames():  # generate frame by frame from camera
                         frame = buffer.tobytes()
                         yield (b'--frame\r\n'
                                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-
 
                 # We show the frames (non-voting process)
 
@@ -236,7 +235,6 @@ def update_load():
                 break
 
 
-
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -252,10 +250,10 @@ def inject_load():
     refresh = datetime.now(tz=None).strftime("%a %d %b %H:%M:%S")
     df_vote = mongof.make_request(collection_inauguration, request)
     df_votants = mongof.retrieve_votants(df_vote)
-    number_frame = 0 if collection_inauguration.count_documents({}) is None else collection_inauguration.count_documents({})
+    number_frame = ifnull(collection_inauguration.count_documents({}), 0)
     nb_gauche = collection_inauguration.count_documents({'hand': 'Gauche'})
     nb_droite = collection_inauguration.count_documents({'hand': 'Droite'})
-    taux_utilisation = str(0 if number_frame == 0 else round_up(100*(nb_droite + nb_gauche) / number_frame, 2))
+    taux_utilisation = str(0 if number_frame == 0 else round_up(100 * (nb_droite + nb_gauche) / number_frame, 2))
     str_nbframe = format(number_frame, ',d').replace(',', ' ')
 
     data = {"vote": df_votants.to_list(), "Valeurs": ['Authenticité', "Ouverture", "Elégance", "Engagement", "Courage"]}
@@ -268,8 +266,8 @@ def inject_load():
     encoded_img_data = plotfig.encode_image("static/barhands.png")
 
     return {'vote1': df_votants[0], 'vote2': df_votants[1], 'vote3': df_votants[2], 'vote4': df_votants[3],
-            'vote5': df_votants[4], 'nbframe': str_nbframe, 'tauxutil': taux_utilisation, 'img_data' : encoded_img_data,
-            'img_repartition': encoded_repartition, 'refresh' : refresh}
+            'vote5': df_votants[4], 'nbframe': str_nbframe, 'tauxutil': taux_utilisation, 'img_data': encoded_img_data,
+            'img_repartition': encoded_repartition, 'refresh': refresh}
 
 
 @app.before_first_request

@@ -22,42 +22,43 @@
 			  margin-left: auto;
 			  margin-right: auto;
 			}
+	overflow: hidden;
 
 
     </style>
 
 <div>
-	<img src="static/onepoint_black.PNG" style="width: 20%; margin-left : 1%" />
-</div>
+	<img src="{{ url_for('static', filename='onepoint_black.PNG') }}" style="width: 20%; margin-left : 1%" />
+</div> <br>
 <div>
 <table class="center" width="100%" style="margin-left: auto;margin-right: auto;">
 	<tbody>
 
 	<tr>
-		<td style="text-align: center; vertical-align: middle; width=40%"><img src="/static/question_satisfaction_black_3.png" width="85%"></td>
+		<td style="text-align: center; vertical-align: middle; width=40%"><img src="{{ url_for('static', filename='question_satisfaction_black_3.png') }}" width="85%"></td>
 	</tr>
 	<tr>
 		<td style="text-align: center; vertical-align: middle;">
 
-			<h3 style="color  : #FFFFFF;"> Pour voter, montrez vos 10 doigts et votez entre 1 et 5 pour la valeur de votre choix. Le résultat s'affichera
-		dans les statistiques de vote.
-			</h3>
+			<h2 style="color  : #FFFFFF;"> Pour voter, montrez vos 10 doigts et votez entre 1 et 5 pour la valeur de votre choix.
+			<br>	Le résultat s'affichera dans les statistiques de vote.
+			</h2>
 		</td>
 
 	</tr>
 
 	<tr>
 		<td style="text-align: center; vertical-align: middle;">
-			<img src="/video_feed" width="85%"></td>
+			<img src="/video_feed" width="80%"></td>
 	</tr>
 
 	<tr>
-		<td style="text-align: center; vertical-align: middle;"><img src="/static/Satisfaction_francais_black_2.png" width="85%"></td>
+		<td style="text-align: center; vertical-align: middle;"><img src="{{ url_for('static', filename='Satisfaction_francais_black_2.png') }}" width="85%"></td>
 	</tr>
 	</tbody>
 </table>
 </div>
-</body>s
+</body>
 </html>
 {% endblock %}
 
